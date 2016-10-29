@@ -4,6 +4,7 @@
   "description": "Server that takes input from Alexa and spews data to the client",
   "main": "index.js",
   "scripts": {
+    "server": "sudo nodejs server.js>log.txt",
     "start": "sudo node server.js > log.txt",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
