@@ -1,7 +1,7 @@
 {
   "intents": [
     {
-      "intent": "GetNewFactIntent"
+      "intent": "DungeonMasterIntent"
     },
     {
       "intent": "AMAZON.HelpIntent"
