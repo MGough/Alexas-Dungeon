@@ -1,6 +1,9 @@
 var port = 8080;
 var express = require('express');
 var app = express();
+var bodyParser = require('body-parser')
+app.use(bodyParser.json));       // to support JSON-encoded bodies
+app.use(express.json());
 
 var map = {
   width: 10,
@@ -36,7 +39,7 @@ app.get('/current_state', function(req,res){
 
 app.post('/input_commands', function(req,res){
   console.log("Recieved a request");
-  console.log(req.query);
+  console.log(req.body);
   res.sendStatus(200); 
 });
 
