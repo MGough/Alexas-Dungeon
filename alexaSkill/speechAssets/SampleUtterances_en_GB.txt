@@ -12,3 +12,5 @@ DungeonMasterIntent give me some information
 DungeonMasterIntent give me some space information
 DungeonMasterIntent tell me something
 DungeonMasterIntent give me something
+
+AMAZON.HelpIntent help
