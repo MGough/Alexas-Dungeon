@@ -1,94 +1,191 @@
-'use strict';
-var Alexa = require('alexa-sdk');
-var APP_ID = '***REMOVED***';  // TODO replace with your app ID (OPTIONAL).
+"use strict";
 
-var languageStrings = {
+var GAME_STATES = {
+    GAME: "_GAMEMODE", // Asking trivia questions.
+    START: "_STARTMODE", // Entry point, start the game.
+    HELP: "_HELPMODE" // The user is asking for help.
+};
+
+/**
+ * When editing your questions pay attention to your punctuation. Make sure you use question marks or periods.
+ * Make sure the first answer is the correct one. Set at least ANSWER_COUNT answers, any extras will be shuffled in.
+ */
+var languageString = {
     "en-GB": {
         "translation": {
-            "FACTS": [
-                "A year on Mercury is just 88 days long.",
-                "Despite being farther from the Sun, Venus experiences higher temperatures than Mercury.",
-                "Venus rotates anti-clockwise, possibly because of a collision in the past with an asteroid.",
-                "On Mars, the Sun appears about half the size as it does on Earth.",
-                "Earth is the only planet not named after a god.",
-                "Jupiter has the shortest day of all the planets.",
-                "The Milky Way galaxy will collide with the Andromeda Galaxy in about 5 billion years.",
-                "The Sun contains 99.86% of the mass in the Solar System.",
-                "The Sun is an almost perfect sphere.",
-                "A total solar eclipse can happen once every 1 to 2 years. This makes them a rare event.",
-                "Saturn radiates two and a half times more energy into space than it receives from the sun.",
-                "The temperature inside the Sun can reach 15 million degrees Celsius.",
-                "The Moon is moving approximately 3.8 cm away from our planet every year."
-            ],
-            "SKILL_NAME" : "British Space Facts",
-            "GET_FACT_MESSAGE" : "Here's your fact: ",
-            "HELP_MESSAGE" : "You can say tell me a space fact, or, you can say exit... What can I help you with?",
-            "HELP_REPROMPT" : "What can I help you with?",
-            "STOP_MESSAGE" : "Goodbye!"
-        }
-    },
-    "en-US": {
-        "translation": {
-            "FACTS": [
-                "A year on Mercury is just 88 days long.",
-                "Despite being farther from the Sun, Venus experiences higher temperatures than Mercury.",
-                "Venus rotates counter-clockwise, possibly because of a collision in the past with an asteroid.",
-                "On Mars, the Sun appears about half the size as it does on Earth.",
-                "Earth is the only planet not named after a god.",
-                "Jupiter has the shortest day of all the planets.",
-                "The Milky Way galaxy will collide with the Andromeda Galaxy in about 5 billion years.",
-                "The Sun contains 99.86% of the mass in the Solar System.",
-                "The Sun is an almost perfect sphere.",
-                "A total solar eclipse can happen once every 1 to 2 years. This makes them a rare event.",
-                "Saturn radiates two and a half times more energy into space than it receives from the sun.",
-                "The temperature inside the Sun can reach 15 million degrees Celsius.",
-                "The Moon is moving approximately 3.8 cm away from our planet every year."
-            ],
-            "SKILL_NAME" : "American Space Facts",
-            "GET_FACT_MESSAGE" : "Here's your fact: ",
-            "HELP_MESSAGE" : "You can say tell me a space fact, or, you can say exit... What can I help you with?",
-            "HELP_REPROMPT" : "What can I help you with?",
-            "STOP_MESSAGE" : "Goodbye!"
+            "GAME_NAME" : "Alexa's Dungeon", // Be sure to change this for your skill.
+            "HELP_MESSAGE": "Say some things, some stuff happens.",
+            "REPEAT_QUESTION_MESSAGE": "To repeat the last update, say, repeat. ",
+            "ASK_MESSAGE_START": "Would you like to start playing?",
+            "HELP_REPROMPT": "To give an answer to a question, respond with the action you wish to take. ",
+            "STOP_MESSAGE": "Would you like to keep playing?",
+            "CANCEL_MESSAGE": "Ok, let\'s play again soon.",
+            "NO_MESSAGE": "Ok, we\'ll play another time. Goodbye!",
+            "GAME_UNHANDLED": "Try saying making a move.",
+            "HELP_UNHANDLED": "Say yes to continue, or no to end the game.",
+            "START_UNHANDLED": "Say start to start a new game.",
+            "NEW_GAME_MESSAGE": "Welcome to %s. ",
+            "WELCOME_MESSAGE": "Enter room",
+            "ANSWER_WRONG_MESSAGE": "wrong. ",
+            "ANSWER_IS_MESSAGE": "That answer is ",
+            "MADE_A_MOVE": "You made a move"
         }
     }
 };
+
+var Alexa = require("alexa-sdk");
+var APP_ID = undefined;  // TODO replace with your app ID (OPTIONAL).
 
 exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
     alexa.APP_ID = APP_ID;
     // To enable string internationalization (i18n) features, set a resources object.
-    alexa.resources = languageStrings;
-    alexa.registerHandlers(handlers);
+    alexa.resources = languageString;
+    alexa.registerHandlers(newSessionHandlers, startStateHandlers, triviaStateHandlers, helpStateHandlers);
     alexa.execute();
 };
 
-var handlers = {
-    'LaunchRequest': function () {
-        this.emit('GetFact');
+var newSessionHandlers = {
+    "LaunchRequest": function () {
+        this.handler.state = GAME_STATES.START;
+        this.emitWithState("StartGame", true);
     },
-    'GetNewFactIntent': function () {
-        this.emit('GetFact');
+    "AMAZON.StartOverIntent": function() {
+        this.handler.state = GAME_STATES.START;
+        this.emitWithState("StartGame", true);
     },
-    'GetFact': function () {
-        // Get a random space fact from the space facts list
-        // Use this.t() to get corresponding language data
-        var factArr = this.t('FACTS');
-        var factIndex = Math.floor(Math.random() * factArr.length);
-        var randomFact = factArr[factIndex];
-
-        // Create speech output
-        var speechOutput = this.t("GET_FACT_MESSAGE") + randomFact;
-        this.emit(':tellWithCard', speechOutput, this.t("SKILL_NAME"), randomFact)
+    "AMAZON.HelpIntent": function() {
+        this.handler.state = GAME_STATES.HELP;
+        this.emitWithState("helpTheUser", true);
     },
-    'AMAZON.HelpIntent': function () {
-        var speechOutput = this.t("HELP_MESSAGE");
-        var reprompt = this.t("HELP_MESSAGE");
-        this.emit(':ask', speechOutput, reprompt);
-    },
-    'AMAZON.CancelIntent': function () {
-        this.emit(':tell', this.t("STOP_MESSAGE"));
-    },
-    'AMAZON.StopIntent': function () {
-        this.emit(':tell', this.t("STOP_MESSAGE"));
+    "Unhandled": function () {
+        var speechOutput = this.t("START_UNHANDLED");
+        this.emit(":ask", speechOutput, speechOutput);
     }
 };
+
+var startStateHandlers = Alexa.CreateStateHandler(GAME_STATES.START, {
+    "StartGame": function (newGame) {
+        var speechOutput = newGame ? this.t("NEW_GAME_MESSAGE", this.t("GAME_NAME")) + this.t("WELCOME_MESSAGE") : "";
+
+        Object.assign(this.attributes, {
+            "speechOutput": speechOutput,
+           "repromptText": speechOutput 
+        });
+
+        // Set the current state to trivia mode. The skill will now use handlers defined in triviaStateHandlers
+        this.handler.state = GAME_STATES.GAME;
+        this.emit(":askWithCard", speechOutput, speechOutput, this.t("GAME_NAME"), speechOutput);
+    }
+});
+
+var triviaStateHandlers = Alexa.CreateStateHandler(GAME_STATES.GAME, {
+    "AnswerIntent": function () {
+        handleUserMove.call(this);
+    },
+    "AttackIntent": function () {
+        handleUserAttack.call(this)
+    },
+    "DontKnowIntent": function () {
+        // perhaps skip
+    },
+    "AMAZON.StartOverIntent": function () {
+        this.handler.state = GAME_STATES.START;
+        this.emitWithState("StartGame", false);
+    },
+    "AMAZON.RepeatIntent": function () {
+        this.emit(":ask", this.attributes["speechOutput"], this.attributes["repromptText"]);
+    },
+    "AMAZON.HelpIntent": function () {
+        this.handler.state = GAME_STATES.HELP;
+        this.emitWithState("helpTheUser", false);
+    },
+    "AMAZON.StopIntent": function () {
+        this.handler.state = GAME_STATES.HELP;
+        var speechOutput = this.t("STOP_MESSAGE");
+        this.emit(":ask", speechOutput, speechOutput);
+    },
+    "AMAZON.CancelIntent": function () {
+        this.emit(":tell", this.t("CANCEL_MESSAGE"));
+    },
+    "Unhandled": function () {
+        var speechOutput = this.t("TRIVIA_UNHANDLED");
+        this.emit(":ask", speechOutput, speechOutput);
+    },
+    "SessionEndedRequest": function () {
+        console.log("Session ended in trivia state: " + this.event.request.reason);
+    }
+});
+
+var helpStateHandlers = Alexa.CreateStateHandler(GAME_STATES.HELP, {
+    "helpTheUser": function (newGame) {
+        var askMessage = newGame ? this.t("ASK_MESSAGE_START") : this.t("REPEAT_QUESTION_MESSAGE") + this.t("STOP_MESSAGE");
+        var speechOutput = this.t("HELP_MESSAGE") + askMessage;
+        var repromptText = this.t("HELP_REPROMPT") + askMessage;
+        this.emit(":ask", speechOutput, repromptText);
+    },
+    "AMAZON.StartOverIntent": function () {
+        this.handler.state = GAME_STATES.START;
+        this.emitWithState("StartGame", false);
+    },
+    "AMAZON.RepeatIntent": function () {
+        var newGame = (this.attributes["speechOutput"] && this.attributes["repromptText"]) ? false : true;
+        this.emitWithState("helpTheUser", newGame);
+    },
+    "AMAZON.HelpIntent": function() {
+        var newGame = (this.attributes["speechOutput"] && this.attributes["repromptText"]) ? false : true;
+        this.emitWithState("helpTheUser", newGame);
+    },
+    "AMAZON.YesIntent": function() {
+        if (this.attributes["speechOutput"] && this.attributes["repromptText"]) {
+            this.handler.state = GAME_STATES.GAME;
+            this.emitWithState("AMAZON.RepeatIntent");
+        } else {
+            this.handler.state = GAME_STATES.START;
+            this.emitWithState("StartGame", false);
+        }
+    },
+    "AMAZON.NoIntent": function() {
+        var speechOutput = this.t("NO_MESSAGE");
+        this.emit(":tell", speechOutput);
+    },
+    "AMAZON.StopIntent": function () {
+        var speechOutput = this.t("STOP_MESSAGE");
+        this.emit(":ask", speechOutput, speechOutput);
+    },
+    "AMAZON.CancelIntent": function () {
+        this.handler.state = GAME_STATES.GAME;
+        this.emitWithState("AMAZON.RepeatIntent");
+    },
+    "Unhandled": function () {
+        var speechOutput = this.t("HELP_UNHANDLED");
+        this.emit(":ask", speechOutput, speechOutput);
+    },
+    "SessionEndedRequest": function () {
+        console.log("Session ended in help state: " + this.event.request.reason);
+    }
+});
+
+function handleUserMove() {
+    var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
+    if(answerSlotValid) {
+        this.emit(":askWithCard", "Moved " + this.event.request.intent.slots.Answer.value);
+    } else {
+        this.emit(":askWithCard", "Please try again"); 
+    }   
+}
+
+function handleUserAttack() {
+    var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
+
+    if(answerSlotValid) {
+        this.emit(":askWithCard", "Attacked " + this.event.request.intent.slots.Answer.value);
+    } else {
+        this.emit(":askWithCard", "Please try again"); 
+    }   
+}
+
+function isAnswerSlotValid(intent) {
+    var answerSlotFilled = intent && intent.slots && intent.slots.Answer && intent.slots.Answer.value;
+    return answerSlotFilled
+}
