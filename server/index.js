@@ -27,7 +27,7 @@ var map = {
 };
 
 app.get('/',function(req,res){
-  res.sendfile('pages/index.html');
+  res.sendFile('pages/index.html');
 });
 
 app.get('/current_state', function(req,res){
@@ -35,6 +35,7 @@ app.get('/current_state', function(req,res){
 });
 
 app.post('/input_commands', function(req,res){
+  console.log("Recieved a request");
   console.log(req);
   res.sendStatus(200); 
 });
