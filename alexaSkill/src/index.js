@@ -14,26 +14,21 @@ var languageString = {
     "en-GB": {
         "translation": {
             "GAME_NAME" : "Alexa's Dungeon", // Be sure to change this for your skill.
-            "HELP_MESSAGE": "Say some things, some stuff happens, would you like to play?",
-            "REPEAT_QUESTION_MESSAGE": "To repeat the last question, say, repeat. ",
+            "HELP_MESSAGE": "Say some things, some stuff happens.",
+            "REPEAT_QUESTION_MESSAGE": "To repeat the last update, say, repeat. ",
             "ASK_MESSAGE_START": "Would you like to start playing?",
-            "HELP_REPROMPT": "To give an answer to a question, respond with the number of the answer. ",
+            "HELP_REPROMPT": "To give an answer to a question, respond with the action you wish to take. ",
             "STOP_MESSAGE": "Would you like to keep playing?",
             "CANCEL_MESSAGE": "Ok, let\'s play again soon.",
             "NO_MESSAGE": "Ok, we\'ll play another time. Goodbye!",
-            "GAME_UNHANDLED": "Try saying a number between 1 and %s",
+            "GAME_UNHANDLED": "Try saying making a move.",
             "HELP_UNHANDLED": "Say yes to continue, or no to end the game.",
             "START_UNHANDLED": "Say start to start a new game.",
             "NEW_GAME_MESSAGE": "Welcome to %s. ",
-            "WELCOME_MESSAGE": "You enter a dark room full of computer scientists",
-            "ANSWER_CORRECT_MESSAGE": "correct. ",
+            "WELCOME_MESSAGE": "Enter room",
             "ANSWER_WRONG_MESSAGE": "wrong. ",
-            "CORRECT_ANSWER_MESSAGE": "The correct answer is %s: %s. ",
             "ANSWER_IS_MESSAGE": "That answer is ",
-            "TELL_QUESTION_MESSAGE": "Question %s. %s ",
-            "GAME_OVER_MESSAGE": "You got %s out of %s questions correct. Thank you for playing!",
-            "SCORE_IS_MESSAGE": "Your score is %s. ",
-            "TEST": "You made a move"
+            "MADE_A_MOVE": "You made a move"
         }
     }
 };
@@ -86,10 +81,13 @@ var startStateHandlers = Alexa.CreateStateHandler(GAME_STATES.START, {
 
 var triviaStateHandlers = Alexa.CreateStateHandler(GAME_STATES.GAME, {
     "AnswerIntent": function () {
-        handleUserResponse.call(this, false);
+        handleUserMove.call(this);
+    },
+    "AttackIntent": function () {
+        handleUserAttack.call(this)
     },
     "DontKnowIntent": function () {
-        handleUserResponse.call(this, true);
+        // perhaps skip
     },
     "AMAZON.StartOverIntent": function () {
         this.handler.state = GAME_STATES.START;
@@ -168,7 +166,26 @@ var helpStateHandlers = Alexa.CreateStateHandler(GAME_STATES.HELP, {
     }
 });
 
-function handleUserResponse(userSkippedTurn) {
-    this.emit(":askWithCard", this.t("You made a move"))
-    //this.emit(":tell", this.t("TEST"));
+function handleUserMove() {
+    var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
+    if(answerSlotValid) {
+        this.emit(":askWithCard", "Moved " + this.event.request.intent.slots.Answer.value);
+    } else {
+        this.emit(":askWithCard", "Please try again"); 
+    }   
+}
+
+function handleUserAttack() {
+    var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
+
+    if(answerSlotValid) {
+        this.emit(":askWithCard", "Attacked " + this.event.request.intent.slots.Answer.value);
+    } else {
+        this.emit(":askWithCard", "Please try again"); 
+    }   
+}
+
+function isAnswerSlotValid(intent) {
+    var answerSlotFilled = intent && intent.slots && intent.slots.Answer && intent.slots.Answer.value;
+    return answerSlotFilled
 }

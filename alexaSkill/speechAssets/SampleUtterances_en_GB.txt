@@ -1,8 +1,10 @@
-AnswerIntent the answer is {Answer}
-AnswerIntent my answer is {Answer}
-AnswerIntent is it {Answer}
-AnswerIntent {Answer} is my answer
+AnswerIntent move {Answer}
+AnswerIntent go {Answer}
 AnswerIntent {Answer}
+
+AttackIntent attack {Answer}
+AttackIntent stab {Answer}
+AttackIntent fire {Answer}
 
 AMAZON.StartOverIntent start game
 AMAZON.StartOverIntent new game

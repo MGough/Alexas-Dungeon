@@ -5,7 +5,16 @@
       "slots": [
         {
           "name": "Answer",
-          "type": "AMAZON.NUMBER"
+          "type": "DIRECTION"
+        }
+      ]
+    },
+    {
+      "intent": "AttackIntent",
+      "slots": [
+        {
+          "name": "Answer",
+          "type": "DIRECTION"
         }
       ]
     },
