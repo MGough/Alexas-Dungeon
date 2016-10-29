@@ -12,7 +12,8 @@ var languageStrings = {
             "GET_FACT_MESSAGE" : "Here's your fact: ",
             "HELP_MESSAGE" : "You can say tell me a space fact, or, you can say exit... What can I help you with?",
             "HELP_REPROMPT" : "What can I help you with?",
-            "STOP_MESSAGE" : "Goodbye!"
+            "STOP_MESSAGE" : "Goodbye!",
+            "WAITING" : "HURRY UP!"
         }
     },
     "en-US": {
@@ -40,7 +41,7 @@ exports.handler = function(event, context, callback) {
 
 var handlers = {
     'LaunchRequest': function () {
-        this.emit(':tell', this.t("SKILL_NAME"));
+        this.emit(':ask', this.t("SKILL_NAME"), this.t("WAITING"));
     },
     'DungeonMasterIntent': function () {
         this.emit('GetFact');
@@ -54,7 +55,7 @@ var handlers = {
 
         // Create speech output
         var speechOutput = this.t("GET_FACT_MESSAGE") + randomFact;
-        this.emit(':tellWithCard', speechOutput, this.t("SKILL_NAME"), randomFact)
+        this.emit(':ask', speechOutput, this.t("SKILL_NAME"), randomFact)
     },
     'AMAZON.HelpIntent': function () {
         var speechOutput = this.t("HELP_MESSAGE");
