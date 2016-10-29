@@ -35,7 +35,8 @@ app.get('/current_state', function(req,res){
 });
 
 app.post('/input_commands', function(req,res){
-  console.log(req); 
+  console.log(req);
+  res.sendStatus(200); 
 });
 
 app.post('/register_character', function(req,res){
