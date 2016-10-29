@@ -169,5 +169,6 @@ var helpStateHandlers = Alexa.CreateStateHandler(GAME_STATES.HELP, {
 });
 
 function handleUserResponse(userSkippedTurn) {
-    this.emit(":tell", this.t("TEST"));
+    this.emit(":askWithCard", this.t("You made a move"))
+    //this.emit(":tell", this.t("TEST"));
 }
