@@ -63,7 +63,7 @@ app.post('/input_commands', function(req,res){
   var sessionId = req.body.sessionId;
   var action = req.body.action;
   var direction = req.body.direction;
-  res.sendStatus(200).send(testPlayer);/*
+  res.send(testPlayer);/*
   if(sessionId == undefined|| action == undefined || direction == undefined){
     console.log("value from request is undefined");
     res.sendStatus(400);
