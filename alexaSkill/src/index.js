@@ -1,9 +1,12 @@
 "use strict";
 
+var gameEnvUrl = "http://52.54.248.154";
+
 var GAME_STATES = {
     GAME: "_GAMEMODE", // Asking trivia questions.
     START: "_STARTMODE", // Entry point, start the game.
-    HELP: "_HELPMODE" // The user is asking for help.
+    HELP: "_HELPMODE", // The user is asking for help.
+    END: "_ENDGAME"
 };
 
 /**
@@ -28,20 +31,30 @@ var languageString = {
             "WELCOME_MESSAGE": "Enter room",
             "ANSWER_WRONG_MESSAGE": "wrong. ",
             "ANSWER_IS_MESSAGE": "That answer is ",
-            "MADE_A_MOVE": "You made a move"
+            "MADE_A_MOVE": "You made a move",
+            "WALKED_WALL": "You walked. Into a wall.",
+            "WALKED_ENEMY": "You walked. Into an enemy",
+            "ATTACKED_WALL": "You attacked an inanimate object",
+            "ATTACKED_ENEMY": "You attacked the enemy dealing great damage",
+            "MOVED_DIRECTION": "You moved %s",
+            "ATTACKED_DIRECTION": "You bravely attacked the air %s"
         }
     }
 };
 
+var request = require('request');
+var syncRequest = require('sync-request');
 var Alexa = require("alexa-sdk");
-var APP_ID = undefined;  // TODO replace with your app ID (OPTIONAL).
+var APP_ID = '***REMOVED***';  // TODO replace with your app ID (OPTIONAL).
+
 
 exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
     alexa.APP_ID = APP_ID;
+    alexa.appId = APP_ID;
     // To enable string internationalization (i18n) features, set a resources object.
     alexa.resources = languageString;
-    alexa.registerHandlers(newSessionHandlers, startStateHandlers, triviaStateHandlers, helpStateHandlers);
+    alexa.registerHandlers(newSessionHandlers, startStateHandlers, triviaStateHandlers, helpStateHandlers, endGameStateHandlers);
     alexa.execute();
 };
 
@@ -64,9 +77,26 @@ var newSessionHandlers = {
     }
 };
 
+var endGameStateHandlers = Alexa.CreateStateHandler(GAME_STATES.END, {
+    "EndGame": function () {
+        this.handler.state = GAME_STATES.END;
+        this.emit(":tell", "You died");
+    }
+});
+
 var startStateHandlers = Alexa.CreateStateHandler(GAME_STATES.START, {
     "StartGame": function (newGame) {
         var speechOutput = newGame ? this.t("NEW_GAME_MESSAGE", this.t("GAME_NAME")) + this.t("WELCOME_MESSAGE") : "";
+        var sessionID = this.event.session.sessionId;
+
+        var res = syncRequest('POST',  gameEnvUrl + '/register_character', {
+            json: { sessionId: sessionID }
+        });
+
+        if (res.statusCode == 200) {
+            var body = JSON.parse(res.body.toString());
+            console.log(body);
+        }
 
         Object.assign(this.attributes, {
             "speechOutput": speechOutput,
@@ -113,7 +143,7 @@ var triviaStateHandlers = Alexa.CreateStateHandler(GAME_STATES.GAME, {
         this.emit(":ask", speechOutput, speechOutput);
     },
     "SessionEndedRequest": function () {
-        console.log("Session ended in trivia state: " + this.event.request.reason);
+        console.log("Session ended in game state: " + this.event.request.reason);
     }
 });
 
@@ -167,23 +197,68 @@ var helpStateHandlers = Alexa.CreateStateHandler(GAME_STATES.HELP, {
 });
 
 function handleUserMove() {
+    var sessionID = this.event.session.sessionId;
     var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
     if(answerSlotValid) {
-        this.emit(":askWithCard", "Moved " + this.event.request.intent.slots.Answer.value);
+        var userDirection = this.event.request.intent.slots.Answer.value;
+        console.log("User said: " + userDirection);
+        var res = syncRequest('POST',  gameEnvUrl + '/input_commands', {
+            json: { sessionId: sessionID, action: 'move', direction: userDirection }
+        });
+
+        if (res.statusCode == 200) {
+            var body = JSON.parse(res.body.toString());
+            console.log(body);
+            if (body.health < 1) {
+                console.log("Player dead");
+                this.handler.state = GAME_STATES.END;
+                this.emitWithState("EndGame", false);
+            } else if(body.status == "wall") {
+                this.emit(":askWithCard", this.t("WALKED_WALL"));
+            } else if (body.status == "enemy") {
+                this.emit(":askWithCard", this.t("WALKED_ENEMY"));
+            } else {
+                this.emit(":askWithCard", this.t("MOVED_DIRECTION", userDirection));
+            }
+        }
+        
     } else {
         this.emit(":askWithCard", "Please try again"); 
     }   
 }
 
 function handleUserAttack() {
+    var sessionID = this.event.session.sessionId;
     var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
 
     if(answerSlotValid) {
-        this.emit(":askWithCard", "Attacked " + this.event.request.intent.slots.Answer.value);
+        var userDirection = this.event.request.intent.slots.Answer.value;
+        
+        console.log("User said: " + userDirection);
+        var res = syncRequest('POST',  gameEnvUrl + '/input_commands', {
+            json: { sessionId: sessionID, action: 'attack', direction: userDirection }
+        });
+
+        if (res.statusCode == 200) {
+            var body = JSON.parse(res.body.toString());
+            console.log(body);
+            if (body.health < 1) {
+                console.log("Player dead");
+                this.handler.state = GAME_STATES.END;
+                this.emitWithState("EndGame", false);
+            } else if(body.status == "wall") {
+                this.emit(":askWithCard", this.t("ATTACKED_WALL"));
+            } else if (body.status == "enemy") {
+                this.emit(":askWithCard", this.t("ATTACKED_ENEMY"));
+            } else {
+                this.emit(":askWithCard", this.t("ATTACKED_DIRECTION", userDirection));
+            }
+        }
     } else {
         this.emit(":askWithCard", "Please try again"); 
     }   
 }
+
 
 function isAnswerSlotValid(intent) {
     var answerSlotFilled = intent && intent.slots && intent.slots.Answer && intent.slots.Answer.value;
