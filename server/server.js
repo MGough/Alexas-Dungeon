@@ -43,7 +43,9 @@ app.post('/input_commands', function(req,res){
 });
 
 app.post('/register_character', function(req,res){
-  
+  console.log("Registering Character");
+  console.log(req.body);
+  res.sendStatus(200);  
 })
 app.listen(80,function(){
   console.log("Listening on port: 80");
