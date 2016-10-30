@@ -222,7 +222,7 @@ function moveMonsters(){
       });
     }
     console.log("Posibillities");
-    console.log("Posibillities");
+    console.log(posibillities);
     var rand = getRandomInt(0,posibillities + 1);
     if(rand == posibillities.length) return;
     currentMonster.location = posibillities[rand];
