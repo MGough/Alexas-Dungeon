@@ -239,6 +239,9 @@ function viableSquare(coord){
   for(var i = 0; i < map.entities.monsters.length;i++){
     if(map.entities.monsters[i].location.x == coord.x && map.entities.monsters[i].location.y == coord.y ) noMonster = false;
   }
+  console.log("in bounds: " + inbounds);
+  console·log("notWall: " + notWall);
+  console.log("noMonster: " + noMonster);
   return inbounds && notWall && noMonster;
 }
 
@@ -246,7 +249,6 @@ function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min;
-
 }
 setInterval(function(){
  moveMonsters();
