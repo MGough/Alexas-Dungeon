@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "server": "sudo nodejs server.js",
-    "start": "sudo nodejs server.js"
+    "start": "sudo nodejs server.js",
     "test": "sudo noejs server.js | ts"
   },
   "author": "",
