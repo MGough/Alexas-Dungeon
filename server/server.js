@@ -1,6 +1,7 @@
 var port = 8080;
 var express = require('express');
 var app = express();
+var path = require('path');
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
 var Pusher = require('pusher');
@@ -12,7 +13,7 @@ var pusher = Pusher({
   key: '433c548f734c4cf70a7b',
   secret: '***REMOVED***',
   cluster: 'eu',
-  encrypted: true 
+  encrypted: true,
 });
 
 console.log( "pusher " + pusher);
@@ -53,7 +54,7 @@ var gameData = {
 console.log("Game Data: ", gameData);
 
 app.get('/',function(req,res){
-  res.sendFile('pages/index.html');
+  res.sendFile(path.join(__dirname+'/pages/index.html'));
 });
 
 app.get('/current_state', function(req,res){
@@ -107,6 +108,7 @@ function moveCharacter(sessionId, direction){
   if(direction == 'right') direction_vector = {x:1,y:0};
   console.log("Direction vector" + direction_vector.x + "," + direction_vector.y);
   if(!(direction_vector.x == 0 && direction_vector.y == 0)){
+    console.log(character);
     var char_x = character.location.x;
     var char_y = character.location.y;
     var next_x = char_x + direction_vector.x;
@@ -131,7 +133,7 @@ function moveCharacter(sessionId, direction){
     console.log("MONSTERS");
     for(var i = 0; i < map.entities.monsters.length;i++){
       console.log(map.entities.monsters[i]);
-      if(map.entities.monsters[i].location.x == next_x && map.entities.location.monsters[i].y == next.y){
+      if(map.entities.monsters[i].location.x == next_x && map.entities.monsters[i].location.y == next_y){
         character.health--;
         character.status = 'enemy';
         console.log("Character " + sessionId + "hit an enemy");
@@ -170,8 +172,8 @@ function makeAttack(sessionId, direction){
       var monster_x = map.entities.monsters[i].location.x;
       var monster_y = map.entities.monsters[i].location.y;
       if(next_x == monster_x && next_y == monster_y){
-        maps.entities.monsters[i].health--;
-        if(maps.entities.monsters[i].health < 1) deadMonsterIds.push(i);
+        map.entities.monsters[i].health--;
+        if(map.entities.monsters[i].health < 1) deadMonsterIds.push(i);
       }
     }
     var offset=0;
