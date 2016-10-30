@@ -3,6 +3,14 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
+var Pusher = require('pusher');
+var pusher = Pusher({
+  appid:'264680',
+  key:'433c548f734c4cf70a7b',
+  secret:'***REMOVED***',
+  cluster:'eu',
+  encrypted:true
+})
 
 var map = {
   width: 10,
@@ -27,6 +35,19 @@ var map = {
     players: {}
   }
 };
+var testPlayer = {
+  health:-1,
+  location:{x:5,y:7},
+  damage:9001,
+  lastAction: 'move',
+  status: 'wall'
+}
+
+var gameData = {
+  startingHealth = 4,
+  startingLocations = [{x:1,y:1}],
+  startingDamage = 9001
+}
 
 app.get('/',function(req,res){
   res.sendFile('pages/index.html');
@@ -42,22 +63,38 @@ app.post('/input_commands', function(req,res){
   var sessionId = req.body.sessionId;
   var action = req.body.action;
   var direction = req.body.direction;
+  res.sendStatus(200).send(testPlayer);/*
   if(sessionId == undefined|| action == undefined || direction == undefined){
     console.log("value from request is undefined");
     res.sendStatus(400);
   }
-  moveCharacter(req.body.sessionId,req.body.action,req.body.direction);
-  res.sendStatus(200); 
+  if(moveCharacter(req.body.sessionId,req.body.action,req.body.direction)){
+    res.sendStatus(200); 
+  }else{
+    res.sendStaus(500);
+  }*/
 });
 
 app.post('/register_character', function(req,res){
   console.log("Registering Character");
   console.log(req.body);
+  if(req.body.sessionId != undefined){
+    addCharacter(req.body.sessionId);
+  }
   res.sendStatus(200);  
 })
 app.listen(80,function(){
   console.log("Listening on port: 80");
-})
- function moveCharacter(){
-return true;
+});
+
+function moveCharacter(sessionId, action, direction){
+  return true;
+}
+
+function addCharacter(sessionId){
+  map.entities.players.sessionId.health = gameData.startingHealth;
+  map.entities.players.sessionId.location = gameData.startingLocations.pop();
+  map.entities.players.sessionId].damage = gameData.startingDamage;
+  pusher.trigger('DungeonMaster', 'Game',map);
+  return map.entities.players.sessionId;
 }
