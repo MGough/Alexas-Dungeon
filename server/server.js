@@ -200,6 +200,8 @@ function addCharacter(sessionId){
 }
 
 function moveMonsters(){
+  console.log(map.entities.monsters);
+  console.log(map.entities.monsters.length);
   for(var i=0; i < map.entities.monsters.length; i++){
     var posibillities = [];
     var currentMonster = map.entities.monsters[i];
