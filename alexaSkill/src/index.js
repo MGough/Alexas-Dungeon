@@ -1,5 +1,7 @@
 "use strict";
 
+var gameEnvUrl = "http://52.54.248.154";
+
 var GAME_STATES = {
     GAME: "_GAMEMODE", // Asking trivia questions.
     START: "_STARTMODE", // Entry point, start the game.
@@ -33,6 +35,7 @@ var languageString = {
     }
 };
 
+var request = require('request');
 var Alexa = require("alexa-sdk");
 var APP_ID = undefined;  // TODO replace with your app ID (OPTIONAL).
 
@@ -67,6 +70,16 @@ var newSessionHandlers = {
 var startStateHandlers = Alexa.CreateStateHandler(GAME_STATES.START, {
     "StartGame": function (newGame) {
         var speechOutput = newGame ? this.t("NEW_GAME_MESSAGE", this.t("GAME_NAME")) + this.t("WELCOME_MESSAGE") : "";
+        var sessionID = this.event.session.sessionId;
+        request.post(
+            gameEnvUrl + '/register_character',
+            { json: { sessionId: sessionID } },
+            function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    console.log(body)
+                }
+            }
+        );
 
         Object.assign(this.attributes, {
             "speechOutput": speechOutput,
@@ -167,19 +180,43 @@ var helpStateHandlers = Alexa.CreateStateHandler(GAME_STATES.HELP, {
 });
 
 function handleUserMove() {
+    var sessionID = this.event.session.sessionId;
     var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
     if(answerSlotValid) {
-        this.emit(":askWithCard", "Moved " + this.event.request.intent.slots.Answer.value);
+        var userDirection = this.event.request.intent.slots.Answer.value;
+        this.emit(":askWithCard", "Moved " + userDirection);
+        console.log("User said: " + userDirection);
+        request.post(
+            gameEnvUrl + '/input_commands',
+            { json: { sessionId: sessionID, action: 'move', direction: userDirection } },
+            function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    console.log(body)
+                }
+            }
+        );
     } else {
         this.emit(":askWithCard", "Please try again"); 
     }   
 }
 
 function handleUserAttack() {
+    var sessionID = this.event.session.sessionId;
     var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
 
     if(answerSlotValid) {
-        this.emit(":askWithCard", "Attacked " + this.event.request.intent.slots.Answer.value);
+        var userDirection = this.event.request.intent.slots.Answer.value;
+        this.emit(":askWithCard", "Attacked " + userDirection);
+        console.log("User said: " + userDirection);
+        request.post(
+            gameEnvUrl + '/input_commands',
+            { json: { sessionId: sessionID, action: 'attack', direction: userDirection } },
+            function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    console.log(body)
+                }
+            }
+        );
     } else {
         this.emit(":askWithCard", "Please try again"); 
     }   
