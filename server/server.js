@@ -93,7 +93,7 @@ function moveCharacter(sessionId, action, direction){
 }
 
 function addCharacter(sessionId){
-  map.entities.players.sessionId = {};
+  map.entities.players['sessionId'] = {};
   map.entities.players.sessionId.health = gameData.startingHealth;
   map.entities.players.sessionId.location = gameData.startingLocations.pop();
   map.entities.players.sessionId.damage = gameData.startingDamage;
