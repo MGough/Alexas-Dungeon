@@ -37,7 +37,7 @@ var map = {
         location: {x:5,y:4}
       }
     ],
-    players: {}
+    characters: {}
   }
 };
 var testPlayer = {
@@ -76,13 +76,13 @@ app.post('/input_commands', function(req,res){
     console.log("value from request is undefined");
     res.sendStatus(400);
   }
-  var character = moveCharacter
+  var character;
   if(action == 'move') character = moveCharacter(sessionId,direction);
   if(action == 'attack') character = makeAttack(sessionId,direction)
   if(character != undefined){
     res.send(character); 
   }else{
-    res.sendStaus(500);
+    res.sendStatus(500);
   }
 });
 
@@ -91,7 +91,9 @@ app.post('/register_character', function(req,res){
   console.log(req.body);
   var character = {}
   if(req.body.sessionId != undefined){
-    character =addCharacter(req.body.sessionId);
+    character = addCharacter(req.body.sessionId);
+    console.log("Initial Character: ");
+    console.log(character);
   }
   res.send(character);  
 })
@@ -101,18 +103,21 @@ app.listen(80,function(){
 
 function moveCharacter(sessionId, direction){
   var direction_vector = {x:0,y:0};
-  console.log(map);
   var character = map.entities.characters[sessionId];
+  console.log("Moved Character: ");
+  console.log(character);
   character.lastAction = 'move';
   if(direction == 'up') direction_vector = {x:0, y:-1};
   if(direction == 'down') direction_vector = {x:0, y:1};
   if(direction == 'left') direction_vector = {x:-1,y:0};
   if(direction == 'right') direction_vector = {x:1,y:0};
-  if(direction_vector.x != 0 && direction_vector.y!=0){
+  console.log("Direction vector" + direction_vector.x + "," + direction_vector.y);
+  if(!(direction_vector.x == 0 && direction_vector.y == 0)){
     var char_x = character.location.x;
     var char_y = character.location.y;
     var next_x = char_x + direction_vector.x;
     var next_y = char_y + direction_vector.y;
+    console.log("New x: " + next_x + "New y: " + next_y);
     if(next_x < 0 || next_x > gameData.width){
       character.status = 'wall';
       console.log("Character " + sessionId + "hit a wall");
@@ -176,10 +181,12 @@ function makeAttack(sessionId, direction){
 }
 
 function addCharacter(sessionId){
-  map.entities.players[sessionId] = {};
-  map.entities.players[sessionId].health = gameData.startingHealth;
-  map.entities.players[sessionId].location = gameData.startingLocations.pop();
-  map.entities.players[sessionId].damage = gameData.startingDamage;
+  map.entities.characters[sessionId] = {};
+  map.entities.characters[sessionId].health = gameData.startingHealth;
+  map.entities.characters[sessionId].location = gameData.startingLocations.pop();
+  map.entities.characters[sessionId].damage = gameData.startingDamage;
   //pusher.trigger('DungeonMaster', 'Game',map);
-  return map.entities.players[sessionId];
+  console.log("Just before added character");
+  console.log(map.entities.characters[sessionId]);
+  return map.entities.characters[sessionId];
 }
