@@ -45,7 +45,7 @@ var map = {
 
 var gameData = {
   startingHealth : 4,
-  startingLocations : [{x:4,y:4}],
+  startingLocations : [{x:1,y:1}],
   startingDamage : 9001,
   width: map.map.length,
   height: map.map[0].length
@@ -198,3 +198,45 @@ function addCharacter(sessionId){
   console.log(map.entities.characters[sessionId]);
   return map.entities.characters[sessionId];
 }
+
+function moveMonsters(){
+  for(var i=0; i < map.entities.monsters.length; i++){
+    var posibillities = [];
+    var currentMonster = map.entities.monsters[i];
+    curr_x = currentMonster.location.x;
+    curr_y = currentMonster.location.y;
+    if(viableSquare({x:(curr_x + 1),y:(curr_y)})) posibillities.push({x:(curr_x + 1),y:(curr_y)});
+    if(viableSquare({x:(curr_x - 1),y:(curr_y)})) posibillities.push({x:(curr_x - 1),y:(curr_y)});
+    if(viableSquare({x:(curr_x),y:(curr_y + 1)})) posibillities.push({x:(curr_x),y:(curr_y + 1)});
+    if(viableSquare({x:(curr_x),y:(curr_y - 1)})) posibillities.push({x:(curr_x),y:(curr_y - 1)});
+    for(var j = 0; j < posibillities.length; j++){
+      Object.keys(map.entities.characters).forEach(function(key,index){
+        if(map.entities.characters[key].location.x == possibillity[j].x && map.entities.characters[key].location.y == posibillities[j].y){
+          map.entities.characters[key].health--;
+          return;
+        }
+      });
+    }
+    int rand = getRandomInt(0,posibillities + 1);
+    if(rand == posibillities.length) return;
+    currentMonster.location = posibillities[rand];
+  }
+}
+
+function viableSquare(coord){
+  var inbounds = coord.x > 0 && coord.y > 0 && coord.x < gameData.width && coord.y < gameData.height;
+  var notWall = map.map[coord.x][coord.y] != 0;
+  var noMonster = true;
+  for(var i = 0; i < map.entities.monsters.length;i++){
+    if(map.entities.monsters[i].location.x == coord.x && map.entities.monsters[i].location.y == coord.y ) noMonster = false;
+  }
+  return inbounds && notWall && noMonster;
+}
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+
+}
+setInterval(moveMonsters, 1000);
