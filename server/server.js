@@ -47,7 +47,7 @@ var gameData = {
   startingHealth : 4,
   startingLocations : [{x:1,y:1}],
   startingDamage : 9001,
-  width: mmap.map[0].length,
+  width: map.map[0].length,
   height: map.map.length,
 }
 
