@@ -237,6 +237,7 @@ function viableSquare(coord){
   var notWall = map.map[coord.x][coord.y] == 0;
   var noMonster = true;
   for(var i = 0; i < map.entities.monsters.length;i++){
+    console.log(map.entities.monsters);
     if(map.entities.monsters[i].location.x == coord.x && map.entities.monsters[i].location.y == coord.y ) noMonster = false;
   }
   console.log("in bounds: " + inbounds);
