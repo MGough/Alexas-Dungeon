@@ -34,8 +34,8 @@
     var channel = pusher.subscribe('DungeonMaster');
     channel.bind('Game', function(data) {
         
-        console.log("Message Recieved!");
-        console.log(data.message);
+        //console.log("Message Recieved!");
+        //console.log(data.message);
         //Parse message data
         var jsonData = JSON.parse(data.message);
         //Debug message data
@@ -58,10 +58,10 @@
             for(var i = entitiesCont.children.length-1; i >=0; i--){
                 entitiesCont.removeChild(entitiesCont.children[i]);
             }
-            console.log("Players: " + players.length);
+            //console.log("Players: " + players.length);
             
             Object.keys(players).forEach(function(key,index) {
-                console.log("Player x: " + players[key].location.x + " y: " + players[key].location.y);
+                //console.log("Player x: " + players[key].location.x + " y: " + players[key].location.y);
                 var sprite = {sprite: new               PIXI.Sprite(PIXI.loader.resources["res/Player.png"].texture), 
                           x: players[key].location.x, y: players[key].location.y};
                 playerSprites.push(sprite);
@@ -115,16 +115,19 @@
                 }
             }
             
-            for(var e = 0; e < players.length; e++){
-                var sprite = {sprite: new PIXI.Sprite(PIXI.loader.resources["res/Player.png"].texture), 
-                          x: players[e].location.x, y: players[e].location.y};
+            Object.keys(players).forEach(function(key,index) {
+                //console.log("Player x: " + players[key].location.x + " y: " + players[key].location.y);
+                var sprite = {sprite: new               PIXI.Sprite(PIXI.loader.resources["res/Player.png"].texture), 
+                          x: players[key].location.x, y: players[key].location.y};
                 playerSprites.push(sprite);
                 sprite.sprite.x = sprite.x * spriteDimension;
                 sprite.sprite.y = sprite.y * spriteDimension;
-                sprite.sprite.width = spriteDimension;
-                sprite.sprite.height = spriteDimension;
+                 sprite.sprite.width = spriteDimension;
+                        sprite.sprite.height = spriteDimension;
                 entitiesCont.addChild(sprite.sprite);
-            }
+                // key: the name of the object key
+                // index: the ordinal position of the key within the object 
+            });
             for(var e = 0; e < enemies.length; e++){
                 var sprite = {sprite: new PIXI.Sprite(PIXI.loader.resources["res/Monster.png"].texture), 
                       x: enemies[e].location.x, y: enemies[e].location.y}
