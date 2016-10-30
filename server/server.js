@@ -44,9 +44,9 @@ var testPlayer = {
 }
 
 var gameData = {
-  startingHealth = 4,
-  startingLocations = [{x:1,y:1}],
-  startingDamage = 9001
+  startingHealth : 4,
+  startingLocations : [{x:1,y:1}],
+  startingDamage : 9001
 }
 
 app.get('/',function(req,res){
