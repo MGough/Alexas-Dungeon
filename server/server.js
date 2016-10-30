@@ -73,10 +73,11 @@ app.post('/input_commands', function(req,res){
   }
   var character;
   if(action == 'move') character = moveCharacter(sessionId,direction);
-  if(action == 'attack') character = makeAttack(sessionId,direction)
+  if(action == 'attack') character = makeAttack(sessionId,direction);
   if(character != undefined){
     res.send(character); 
   }else{
+    console.log("ERROR");
     res.sendStatus(500);
   }
 });
