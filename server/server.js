@@ -199,7 +199,7 @@ function addCharacter(sessionId){
   return map.entities.characters[sessionId];
 }
 
-function moveMonsters(){
+function moveMonsters(map){
   console.log(map.entities.monsters);
   console.log(map.entities.monsters.length);
   for(var i=0; i < map.entities.monsters.length; i++){
@@ -246,6 +246,6 @@ function getRandomInt(min, max) {
 
 }
 setInterval(function(){
- moveMonsters();
+ moveMonsters(map);
  console.log("Moving Monsters");
 }, 8000);
