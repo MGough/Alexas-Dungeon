@@ -31,7 +31,13 @@ var languageString = {
             "WELCOME_MESSAGE": "Enter room",
             "ANSWER_WRONG_MESSAGE": "wrong. ",
             "ANSWER_IS_MESSAGE": "That answer is ",
-            "MADE_A_MOVE": "You made a move"
+            "MADE_A_MOVE": "You made a move",
+            "WALKED_WALL": "You walked. Into a wall.",
+            "WALKED_ENEMY": "You walked. Into an enemy",
+            "ATTACKED_WALL": "You attacked an inanimate object",
+            "ATTACKED_ENEMY": "You attacked the enemy dealing great damage",
+            "MOVED_DIRECTION": "You moved %s",
+            "ATTACKED_DIRECTION": "You bravely attacked the air %s"
         }
     }
 };
@@ -207,12 +213,15 @@ function handleUserMove() {
                 console.log("Player dead");
                 this.handler.state = GAME_STATES.END;
                 this.emitWithState("EndGame", false);
+            } else if(body.status == "wall") {
+                this.emit(":askWithCard", this.t("WALKED_WALL"));
+            } else if (body.status == "enemy") {
+                this.emit(":askWithCard", this.t("WALKED_ENEMY"));
             } else {
-                this.emit(":askWithCard", "Moved " + userDirection);
+                this.emit(":askWithCard", this.t("MOVED_DIRECTION", userDirection));
             }
         }
         
-        console.log("Should be after death");
     } else {
         this.emit(":askWithCard", "Please try again"); 
     }   
@@ -226,24 +235,25 @@ function handleUserAttack() {
         var userDirection = this.event.request.intent.slots.Answer.value;
         
         console.log("User said: " + userDirection);
-        request.post(
-            gameEnvUrl + '/input_commands',
-            { json: { sessionId: sessionID, action: 'attack', direction: userDirection } },
-            function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    console.log(body)
-                    // var jsonBody = JSON.parse(body);
-                    if (body.health < 1) {
-                        console.log("Player dead");
-                        //this.handler.state = GAME_STATES.END;
-                        //this.emitWithState("EndGame", false);
-                        this.emit(":askWithCard", "You are dead");
-                    } else {
-                        this.emit(":askWithCard", "Attacked " + userDirection);
-                    }
-                }
+        var res = syncRequest('POST',  gameEnvUrl + '/input_commands', {
+            json: { sessionId: sessionID, action: 'attack', direction: userDirection }
+        });
+
+        if (res.statusCode == 200) {
+            var body = JSON.parse(res.body.toString());
+            console.log(body);
+            if (body.health < 1) {
+                console.log("Player dead");
+                this.handler.state = GAME_STATES.END;
+                this.emitWithState("EndGame", false);
+            } else if(body.status == "wall") {
+                this.emit(":askWithCard", this.t("ATTACKED_WALL"));
+            } else if (body.status == "enemy") {
+                this.emit(":askWithCard", this.t("ATTACKED_ENEMY"));
+            } else {
+                this.emit(":askWithCard", this.t("ATTACKED_DIRECTION", userDirection));
             }
-        );
+        }
     } else {
         this.emit(":askWithCard", "Please try again"); 
     }   
