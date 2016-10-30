@@ -39,6 +39,14 @@ app.get('/current_state', function(req,res){
 app.post('/input_commands', function(req,res){
   console.log("Recieved a request");
   console.log(req.body);
+  var sessionId = req.body.sessionId;
+  var action = req.body.action;
+  var direction = req.body.direction;
+  if(sessionId == undefined|| action == undefined || direction == undefined){
+    console.log("value from request is undefined");
+    res.sendStatus(400);
+  }
+  moveCharacter(req.body.sessionId,req.body.action,req.body.direction);
   res.sendStatus(200); 
 });
 
