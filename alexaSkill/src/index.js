@@ -5,7 +5,8 @@ var gameEnvUrl = "http://52.54.248.154";
 var GAME_STATES = {
     GAME: "_GAMEMODE", // Asking trivia questions.
     START: "_STARTMODE", // Entry point, start the game.
-    HELP: "_HELPMODE" // The user is asking for help.
+    HELP: "_HELPMODE", // The user is asking for help.
+    END: "_ENDGAME"
 };
 
 /**
@@ -36,12 +37,15 @@ var languageString = {
 };
 
 var request = require('request');
+var syncRequest = require('sync-request');
 var Alexa = require("alexa-sdk");
-var APP_ID = undefined;  // TODO replace with your app ID (OPTIONAL).
+var APP_ID = '***REMOVED***';  // TODO replace with your app ID (OPTIONAL).
+
 
 exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
     alexa.APP_ID = APP_ID;
+    alexa.appId = APP_ID;
     // To enable string internationalization (i18n) features, set a resources object.
     alexa.resources = languageString;
     alexa.registerHandlers(newSessionHandlers, startStateHandlers, triviaStateHandlers, helpStateHandlers);
@@ -67,19 +71,25 @@ var newSessionHandlers = {
     }
 };
 
+var endGameStateHandlers = Alexa.CreateStateHandler(GAME_STATES.END, {
+    "EndGame": function () {
+        this.emit(":tell", "You died");
+    }
+});
+
 var startStateHandlers = Alexa.CreateStateHandler(GAME_STATES.START, {
     "StartGame": function (newGame) {
         var speechOutput = newGame ? this.t("NEW_GAME_MESSAGE", this.t("GAME_NAME")) + this.t("WELCOME_MESSAGE") : "";
         var sessionID = this.event.session.sessionId;
-        request.post(
-            gameEnvUrl + '/register_character',
-            { json: { sessionId: sessionID } },
-            function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    console.log(body)
-                }
-            }
-        );
+
+        var res = syncRequest('POST',  gameEnvUrl + '/register_character', {
+            json: { sessionId: sessionID }
+        });
+
+        if (res.statusCode == 200) {
+            var body = JSON.parse(res.body.toString());
+            console.log(body);
+        }
 
         Object.assign(this.attributes, {
             "speechOutput": speechOutput,
@@ -126,7 +136,7 @@ var triviaStateHandlers = Alexa.CreateStateHandler(GAME_STATES.GAME, {
         this.emit(":ask", speechOutput, speechOutput);
     },
     "SessionEndedRequest": function () {
-        console.log("Session ended in trivia state: " + this.event.request.reason);
+        console.log("Session ended in game state: " + this.event.request.reason);
     }
 });
 
@@ -184,17 +194,23 @@ function handleUserMove() {
     var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
     if(answerSlotValid) {
         var userDirection = this.event.request.intent.slots.Answer.value;
-        this.emit(":askWithCard", "Moved " + userDirection);
         console.log("User said: " + userDirection);
-        request.post(
-            gameEnvUrl + '/input_commands',
-            { json: { sessionId: sessionID, action: 'move', direction: userDirection } },
-            function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    console.log(body)
-                }
+        var res = syncRequest('POST',  gameEnvUrl + '/input_commands', {
+            json: { sessionId: sessionID, action: 'move', direction: userDirection }
+        });
+
+        if (res.statusCode == 200) {
+            var body = JSON.parse(res.body.toString());
+            console.log(body);
+            if (body.health < 1) {
+                console.log("Player dead");
+                this.emit(":askWithCard", "You are dead.");
+            } else {
+                this.emit(":askWithCard", "Moved " + userDirection);
             }
-        );
+        }
+        
+        console.log("Should be after death");
     } else {
         this.emit(":askWithCard", "Please try again"); 
     }   
@@ -206,7 +222,7 @@ function handleUserAttack() {
 
     if(answerSlotValid) {
         var userDirection = this.event.request.intent.slots.Answer.value;
-        this.emit(":askWithCard", "Attacked " + userDirection);
+        
         console.log("User said: " + userDirection);
         request.post(
             gameEnvUrl + '/input_commands',
@@ -214,6 +230,15 @@ function handleUserAttack() {
             function (error, response, body) {
                 if (!error && response.statusCode == 200) {
                     console.log(body)
+                    // var jsonBody = JSON.parse(body);
+                    if (body.health < 1) {
+                        console.log("Player dead");
+                        //this.handler.state = GAME_STATES.END;
+                        //this.emitWithState("EndGame", false);
+                        this.emit(":askWithCard", "You are dead");
+                    } else {
+                        this.emit(":askWithCard", "Attacked " + userDirection);
+                    }
                 }
             }
         );
@@ -221,6 +246,7 @@ function handleUserAttack() {
         this.emit(":askWithCard", "Please try again"); 
     }   
 }
+
 
 function isAnswerSlotValid(intent) {
     var answerSlotFilled = intent && intent.slots && intent.slots.Answer && intent.slots.Answer.value;
