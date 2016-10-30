@@ -72,7 +72,6 @@ app.post('/input_commands', function(req,res){
   var sessionId = req.body.sessionId;
   var action = req.body.action;
   var direction = req.body.direction;
-  res.send(testPlayer);/*
   if(sessionId == undefined|| action == undefined || direction == undefined){
     console.log("value from request is undefined");
     res.sendStatus(400);
@@ -84,7 +83,7 @@ app.post('/input_commands', function(req,res){
     res.send(character); 
   }else{
     res.sendStaus(500);
-  }*/
+  }
 });
 
 app.post('/register_character', function(req,res){
