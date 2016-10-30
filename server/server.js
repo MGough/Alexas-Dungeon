@@ -45,7 +45,7 @@ var map = {
 
 var gameData = {
   startingHealth : 4,
-  startingLocations : [{x:4,y:4}],
+  startingLocations : [{x:1,y:1}],
   startingDamage : 9001,
   width: map.map.length,
   height: map.map[0].length
@@ -239,3 +239,4 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 
 }
+setInterval(moveMonsters, 1000);
