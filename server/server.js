@@ -8,7 +8,7 @@ var Pusher = require('pusher');
 
 console.log("Pusher " + Pusher);
 
-var pusher = Pusher({
+var pusher = new Pusher({
   appId: '264680',
   key: '433c548f734c4cf70a7b',
   secret: '***REMOVED***',
@@ -145,6 +145,7 @@ function moveCharacter(sessionId, direction){
   character.location.x = next_x;
   character.location.y = next_y;
   character.status = 'success';
+  pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
   return character; 
 }
 
@@ -167,12 +168,14 @@ function makeAttack(sessionId, direction){
       character.status = 'wall';
       return character;
     }
+    character.status = 'success';
     var deadMonsterIds = [];
     for(var i=0;i<map.entities.monsters.length;i++){
       var monster_x = map.entities.monsters[i].location.x;
       var monster_y = map.entities.monsters[i].location.y;
       if(next_x == monster_x && next_y == monster_y){
         map.entities.monsters[i].health--;
+        character.status = 'enemy';
         if(map.entities.monsters[i].health < 1) deadMonsterIds.push(i);
       }
     }
@@ -180,7 +183,7 @@ function makeAttack(sessionId, direction){
     for(var i = 0; i < deadMonsterIds.length; i++){
       map.entities.monsters.splice(i-offset++, 1); 
     }
-    character.status = 'success';
+    pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
     return character;
   } 
 }
@@ -190,7 +193,7 @@ function addCharacter(sessionId){
   map.entities.characters[sessionId].health = gameData.startingHealth;
   map.entities.characters[sessionId].location = gameData.startingLocations.pop();
   map.entities.characters[sessionId].damage = gameData.startingDamage;
-  //pusher.trigger('DungeonMaster', 'Game',map);
+  pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
   console.log("Just before added character");
   console.log(map.entities.characters[sessionId]);
   return map.entities.characters[sessionId];
