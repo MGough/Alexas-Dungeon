@@ -240,7 +240,7 @@ function viableSquare(coord){
     if(map.entities.monsters[i].location.x == coord.x && map.entities.monsters[i].location.y == coord.y ) noMonster = false;
   }
   console.log("in bounds: " + inbounds);
-  console·log("notWall: " + notWall);
+  console.log("notWall: " + notWall);
   console.log("noMonster: " + noMonster);
   return inbounds && notWall && noMonster;
 }
