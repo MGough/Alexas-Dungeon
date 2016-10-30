@@ -35,7 +35,7 @@
     channel.bind('Game', function(data) {
         
         //console.log("Message Recieved!");
-        //console.log(data.message);
+        console.log(data.message);
         //Parse message data
         var jsonData = JSON.parse(data.message);
         //Debug message data
@@ -52,6 +52,7 @@
         PIXI.loader.add("res/Ground.png")
                 .add("res/Player.png")
                 .add("res/Wall.png")
+                .add("res/PlayerRed.png")
                 .add("res/Monster.png").load(setup);
         } else {
             
@@ -62,8 +63,21 @@
             
             Object.keys(players).forEach(function(key,index) {
                 //console.log("Player x: " + players[key].location.x + " y: " + players[key].location.y);
-                var sprite = {sprite: new               PIXI.Sprite(PIXI.loader.resources["res/Player.png"].texture), 
+                var img = "Player.png";
+                if(players[key].health <= 0){
+                    img = "PlayerRed.png";
+                } else if(players[key].health == 1){
+                    img = "Player1.png";
+                } else  if(players[key].health == 2){
+                    img = "Player2.png";
+                } else  if(players[key].health == 3){
+                    img = "Player3.png";
+                }
+                
+                     var sprite = {sprite: new               PIXI.Sprite(PIXI.loader.resources["res/" + img + ".png"].texture), 
                           x: players[key].location.x, y: players[key].location.y};
+                
+               
                 playerSprites.push(sprite);
                 sprite.sprite.x = sprite.x * spriteDimension;
                 sprite.sprite.y = sprite.y * spriteDimension;
@@ -170,5 +184,5 @@
     //Create a container object called the `stage`
         </script>
     </div>
-    <h1 id="demo">No Map</h1>
+    <h1 id="demo" style="width:640px; margin:0 auto;">No Map</h1>
 </body>
