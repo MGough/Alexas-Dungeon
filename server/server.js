@@ -220,6 +220,7 @@ function moveMonsters(){
     var rand = getRandomInt(0,posibillities + 1);
     if(rand == posibillities.length) return;
     currentMonster.location = posibillities[rand];
+    pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
   }
 }
 
