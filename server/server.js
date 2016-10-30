@@ -101,6 +101,7 @@ app.listen(80,function(){
 
 function moveCharacter(sessionId, direction){
   var direction_vector = {x:0,y:0};
+  console.log(map)
   var character = map.entities.characters[sessionId];
   character.lastAction = 'move';
   if(direction == 'up') direction_vector = {x:0, y:-1};
