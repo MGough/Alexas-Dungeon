@@ -101,7 +101,7 @@ app.listen(80,function(){
 
 function moveCharacter(sessionId, direction){
   var direction_vector = {x:0,y:0};
-  var character = map.entities.characters[sessionid];
+  var character = map.entities.characters[sessionId];
   character.lastAction = 'move';
   if(direction == 'up') direction_vector = {x:0, y:-1};
   if(direction == 'down') direction_vector = {x:0, y:1};
@@ -141,7 +141,7 @@ function moveCharacter(sessionId, direction){
 
 function makeAttack(sessionId, direction){
   var direction_vector = {x:0,y:0};
-  var character = map.entities.characters[sessionid];
+  var character = map.entities.characters[sessionId];
   character.lastAction = 'attack';
   if(direction == 'up') direction_vector = {x:0, y:-1};
   if(direction == 'down') direction_vector = {x:0, y:1};
