@@ -234,7 +234,7 @@ function moveMonsters(){
 
 function viableSquare(coord){
   var inbounds = coord.x > 0 && coord.y > 0 && coord.x < gameData.width && coord.y < gameData.height;
-  var notWall = map.map[coord.x][coord.y] != 0;
+  var notWall = map.map[coord.x][coord.y] == 0;
   var noMonster = true;
   for(var i = 0; i < map.entities.monsters.length;i++){
     if(map.entities.monsters[i].location.x == coord.x && map.entities.monsters[i].location.y == coord.y ) noMonster = false;
