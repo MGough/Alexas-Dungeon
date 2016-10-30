@@ -44,9 +44,9 @@ var testPlayer = {
 }
 
 var gameData = {
-  startingHealth = 4,
-  startingLocations = [{x:1,y:1}],
-  startingDamage = 9001
+  startingHealth : 4,
+  startingLocations : [{x:1,y:1}],
+  startingDamage : 9001
 }
 
 app.get('/',function(req,res){
@@ -94,7 +94,7 @@ function moveCharacter(sessionId, action, direction){
 function addCharacter(sessionId){
   map.entities.players.sessionId.health = gameData.startingHealth;
   map.entities.players.sessionId.location = gameData.startingLocations.pop();
-  map.entities.players.sessionId].damage = gameData.startingDamage;
+  map.entities.players.sessionId.damage = gameData.startingDamage;
   pusher.trigger('DungeonMaster', 'Game',map);
   return map.entities.players.sessionId;
 }
