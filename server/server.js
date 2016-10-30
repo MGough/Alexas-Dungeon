@@ -54,7 +54,7 @@ var gameData = {
 console.log("Game Data: ", gameData);
 
 app.get('/',function(req,res){
-  res.sendFile(path.join(__dirname+'/pages/index.html'));
+  res.sendFile(path.join(__dirname+'/client/index.html'));
 });
 
 app.get('/current_state', function(req,res){
