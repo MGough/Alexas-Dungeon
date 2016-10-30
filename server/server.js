@@ -39,6 +39,7 @@ app.get('/current_state', function(req,res){
 app.post('/input_commands', function(req,res){
   console.log("Recieved a request");
   console.log(req.body);
+
   res.sendStatus(200); 
 });
 
