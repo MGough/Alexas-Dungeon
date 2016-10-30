@@ -191,7 +191,7 @@ function makeAttack(sessionId, direction){
 function addCharacter(sessionId){
   map.entities.characters[sessionId] = {};
   map.entities.characters[sessionId].health = gameData.startingHealth;
-  map.entities.characters[sessionId].location = gameData.startingLocations.pop();
+  map.entities.characters[sessionId].location = gameData.startingLocations[0];
   map.entities.characters[sessionId].damage = gameData.startingDamage;
   pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
   console.log("Just before added character");
@@ -203,6 +203,7 @@ function moveMonsters(){
   for(var i=0; i < map.entities.monsters.length; i++){
     var posibillities = [];
     var currentMonster = map.entities.monsters[i];
+    console.log(currentMonster);
     curr_x = currentMonster.location.x;
     curr_y = currentMonster.location.y;
     if(viableSquare({x:(curr_x + 1),y:(curr_y)})) posibillities.push({x:(curr_x + 1),y:(curr_y)});
