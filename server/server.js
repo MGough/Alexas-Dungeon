@@ -47,8 +47,8 @@ var gameData = {
   startingHealth : 4,
   startingLocations : [{x:1,y:1}],
   startingDamage : 9001,
-  width: map.map.length,
-  height: map.map[0].length
+  width: mmap.map[0].length,
+  height: map.map.length,
 }
 
 console.log("Game Data: ", gameData);
@@ -124,7 +124,7 @@ function moveCharacter(sessionId, direction){
       console.log("Character " + sessionId + "hit a wall");
       return character;
     }
-    if(map.map[next_x][next_y] == 1){
+    if(map.map[next_y][next_x] == 1){
       character.status = 'wall';
       console.log("Character " + sessionId + "hit a wall");
       return character;
@@ -164,7 +164,7 @@ function makeAttack(sessionId, direction){
     var char_y = character.location.y;
     var next_x = char_x + direction_vector.x;
     var next_y = char_y + direction_vector.y;
-    if(map.map[next_x][next_y] == 1){
+    if(map.map[next_y][next_x] == 1){
       character.status = 'wall';
       return character;
     }
@@ -234,7 +234,7 @@ function moveMonsters(){
 
 function viableSquare(coord){
   var inbounds = coord.x > 0 && coord.y > 0 && coord.x < gameData.width && coord.y < gameData.height;
-  var notWall = map.map[coord.x][coord.y] == 0;
+  var notWall = map.map[coord.y][coord.x] == 0;
   var noMonster = true;
   for(var i = 0; i < map.entities.monsters.length;i++){
     console.log(map.entities.monsters);
