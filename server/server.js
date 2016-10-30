@@ -179,9 +179,9 @@ function makeAttack(sessionId, direction){
         if(map.entities.monsters[i].health < 1) deadMonsterIds.push(i);
       }
     }
-    var offset=0;
-    for(var i = 0; i < deadMonsterIds.length; i++){
-      map.entities.monsters.splice(i-offset++, 1); 
+
+    for(var i = deadMonsterIds.length - 1; i >= 0; i--){
+      map.entities.monsters.splice(deadMonsterIds[i], 1); 
     }
     pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
     return character;
