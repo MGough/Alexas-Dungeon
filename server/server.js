@@ -242,7 +242,7 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 
 }
-setInterval(moveMonsters, 1000);
 setInterval(function(){
-  console.log("Tick");
+ moveMonsters();
+ console.log("Moving Monsters");
 }, 1000);
