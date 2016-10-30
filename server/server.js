@@ -4,6 +4,7 @@ var app = express();
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
 var Pusher = require('pusher');
+console.log(Pusher);
 var pusher = Pusher({
   appid:'264680',
   key:'433c548f734c4cf70a7b',
