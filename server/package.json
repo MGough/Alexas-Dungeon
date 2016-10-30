@@ -4,8 +4,9 @@
   "description": "Server that takes input from Alexa and spews data to the client",
   "main": "index.js",
   "scripts": {
-    "server": "sudo nodejs server.js>log.txt",
+    "server": "sudo nodejs server.js",
     "start": "sudo nodejs server.js"
+    "test": "sudo noejs server.js | ts"
   },
   "author": "",
   "license": "ISC",
