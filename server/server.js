@@ -217,7 +217,7 @@ function moveMonsters(){
         }
       });
     }
-    int rand = getRandomInt(0,posibillities + 1);
+    var rand = getRandomInt(0,posibillities + 1);
     if(rand == posibillities.length) return;
     currentMonster.location = posibillities[rand];
   }
