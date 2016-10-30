@@ -8,11 +8,11 @@ var Pusher = require('pusher');
 console.log("Pusher " + Pusher);
 
 var pusher = Pusher({
-  appId:'264680',
-  key:'433c548f734c4cf70a7b',
-  secret:'***REMOVED***',
-  cluster:'eu',
-  encrypted:true
+  appId: '264680',
+  key: '433c548f734c4cf70a7b',
+  secret: '***REMOVED***',
+  cluster: 'eu',
+  encrypted: true 
 });
 
 console.log( "pusher " + pusher);
@@ -94,14 +94,15 @@ app.listen(80,function(){
 });
 
 function moveCharacter(sessionId, action, direction){
-  return true;
+  
+  return map.entities.characters[sessionId]
 }
 
 function addCharacter(sessionId){
-  map.entities.players['sessionId'] = {};
-  map.entities.players.sessionId.health = gameData.startingHealth;
-  map.entities.players.sessionId.location = gameData.startingLocations.pop();
-  map.entities.players.sessionId.damage = gameData.startingDamage;
+  map.entities.players[sessionId] = {};
+  map.entities.players[sessionId].health = gameData.startingHealth;
+  map.entities.players.[sessionId].location = gameData.startingLocations.pop();
+  map.entities.players.[sessionId].damage = gameData.startingDamage;
   //pusher.trigger('DungeonMaster', 'Game',map);
-  return map.entities.players.sessionId;
+  return map.entities.players[sessionId];
 }
