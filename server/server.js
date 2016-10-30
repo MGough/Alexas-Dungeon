@@ -71,14 +71,11 @@ app.post('/input_commands', function(req,res){
     console.log("value from request is undefined");
     res.sendStatus(400);
   }
-  var character;
+  var character = map.entities.characters[sessionId];
   if(action == 'move') character = moveCharacter(sessionId,direction);
   if(action == 'attack') character = makeAttack(sessionId,direction);
   if(character != undefined){
     res.send(character); 
-  }else{
-    console.log("ERROR");
-    res.sendStatus(500);
   }
 });
 
@@ -103,6 +100,8 @@ function moveCharacter(sessionId, direction){
   console.log("Moved Character: ");
   console.log(character);
   character.lastAction = 'move';
+  var next_x = character.location.x;
+  var next_y = character.location.y;
   if(direction == 'up') direction_vector = {x:0, y:-1};
   if(direction == 'down') direction_vector = {x:0, y:1};
   if(direction == 'left') direction_vector = {x:-1,y:0};
@@ -112,8 +111,8 @@ function moveCharacter(sessionId, direction){
     console.log(character);
     var char_x = character.location.x;
     var char_y = character.location.y;
-    var next_x = char_x + direction_vector.x;
-    var next_y = char_y + direction_vector.y;
+    next_x = char_x + direction_vector.x;
+    next_y = char_y + direction_vector.y;
     console.log("New x: " + next_x + "New y: " + next_y);
     if(next_x < 0 || next_x > gameData.width){
       character.status = 'wall';
@@ -141,8 +140,8 @@ function moveCharacter(sessionId, direction){
         return character; 
       }
     }
-    
   }
+
   character.location.x = next_x;
   character.location.y = next_y;
   character.status = 'success';
