@@ -48,7 +48,7 @@ exports.handler = function(event, context, callback) {
     alexa.appId = APP_ID;
     // To enable string internationalization (i18n) features, set a resources object.
     alexa.resources = languageString;
-    alexa.registerHandlers(newSessionHandlers, startStateHandlers, triviaStateHandlers, helpStateHandlers);
+    alexa.registerHandlers(newSessionHandlers, startStateHandlers, triviaStateHandlers, helpStateHandlers, endGameStateHandlers);
     alexa.execute();
 };
 
@@ -73,6 +73,7 @@ var newSessionHandlers = {
 
 var endGameStateHandlers = Alexa.CreateStateHandler(GAME_STATES.END, {
     "EndGame": function () {
+        this.handler.state = GAME_STATES.END;
         this.emit(":tell", "You died");
     }
 });
@@ -204,7 +205,8 @@ function handleUserMove() {
             console.log(body);
             if (body.health < 1) {
                 console.log("Player dead");
-                this.emit(":askWithCard", "You are dead.");
+                this.handler.state = GAME_STATES.END;
+                this.emitWithState("EndGame", false);
             } else {
                 this.emit(":askWithCard", "Moved " + userDirection);
             }
