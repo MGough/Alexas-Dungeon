@@ -78,10 +78,11 @@ app.post('/input_commands', function(req,res){
 app.post('/register_character', function(req,res){
   console.log("Registering Character");
   console.log(req.body);
+  var character = {}
   if(req.body.sessionId != undefined){
-    addCharacter(req.body.sessionId);
+    character =addCharacter(req.body.sessionId);
   }
-  res.sendStatus(200);  
+  res.send(character);  
 })
 app.listen(80,function(){
   console.log("Listening on port: 80");
