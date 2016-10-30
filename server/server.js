@@ -246,4 +246,4 @@ function getRandomInt(min, max) {
 setInterval(function(){
  moveMonsters();
  console.log("Moving Monsters");
-}, 1000);
+}, 8000);
