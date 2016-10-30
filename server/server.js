@@ -18,8 +18,9 @@ var pusher = Pusher({
 console.log( "pusher " + pusher);
 
 var map = {
-  width: 10,
   map: [[1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,0,0,0,1],
@@ -40,17 +41,10 @@ var map = {
     characters: {}
   }
 };
-var testPlayer = {
-  health:-1,
-  location:{x:5,y:7},
-  damage:9001,
-  lastAction: 'move',
-  status: 'wall'
-}
 
 var gameData = {
   startingHealth : 4,
-  startingLocations : [{x:1,y:1}],
+  startingLocations : [{x:4,y:4}],
   startingDamage : 9001,
   width: map.map.length,
   height: map.map[0].length
@@ -123,14 +117,21 @@ function moveCharacter(sessionId, direction){
       console.log("Character " + sessionId + "hit a wall");
       return character;
     }
+    if(next_y < 0 || next_y > gameData.height){
+      character.status = 'wall';
+      console.log("Character " + sessionId + "hit a wall");
+      return character;
+    }
     if(map.map[next_x][next_y] == 1){
       character.status = 'wall';
       console.log("Character " + sessionId + "hit a wall");
       return character;
     }
 
+    console.log("MONSTERS");
     for(var i = 0; i < map.entities.monsters.length;i++){
-      if(map.entities.monsters[i].x == next_x && map.entities.monsters[i].y == next.y){
+      console.log(map.entities.monsters[i]);
+      if(map.entities.monsters[i].location.x == next_x && map.entities.location.monsters[i].y == next.y){
         character.health--;
         character.status = 'enemy';
         console.log("Character " + sessionId + "hit an enemy");
@@ -149,18 +150,20 @@ function makeAttack(sessionId, direction){
   var direction_vector = {x:0,y:0};
   var character = map.entities.characters[sessionId];
   character.lastAction = 'attack';
+  console.log("Attack Character");
+  console.log(character);
   if(direction == 'up') direction_vector = {x:0, y:-1};
   if(direction == 'down') direction_vector = {x:0, y:1};
   if(direction == 'left') direction_vector = {x:-1,y:0};
   if(direction == 'right') direction_vector = {x:1,y:0};
-  if(direction_vector.x != 0 && direction_vector.y!=0){
+  if(!(direction_vector.x == 0 && direction_vector.y==0)){
     var char_x = character.location.x;
     var char_y = character.location.y;
     var next_x = char_x + direction_vector.x;
     var next_y = char_y + direction_vector.y;
     if(map.map[next_x][next_y] == 1){
-      character.status = wall;
-      return charater;
+      character.status = 'wall';
+      return character;
     }
     var deadMonsterIds = [];
     for(var i=0;i<map.entities.monsters.length;i++){
