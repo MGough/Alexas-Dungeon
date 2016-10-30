@@ -1,4 +1,5 @@
 AnswerIntent move {Answer}
+AnswerIntent walk {Answer}
 AnswerIntent go {Answer}
 AnswerIntent {Answer}
 
