@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<head>
+  <title>Pusher Test</title>
+    <script src="js/pixi.min.js"></script>
+    
+    <script src="https://js.pusher.com/3.2/pusher.min.js"></script>
+    <script>
+    
+    var spriteDimension = 64;    
+    var renderer;
+    var sprite;
+   
+    var stage = new PIXI.Container();
+    var gameScene = new PIXI.Container();
+    var entitiesCont = new PIXI.Container();
+   
+        
+    var initialisedMap = false;
+    var enemySprites = [];
+    var playerSprites = [];
+    var wallSprites = [];
+    var groundSprites = [];
+        
+    var pusher = new Pusher('433c548f734c4cf70a7b', {
+      cluster: 'eu',
+      encrypted: true
+    });
+        
+    function onload(){    
+        renderer = PIXI.autoDetectRenderer(640, 640);
+        document.getElementById("canvas").appendChild(renderer.view);
+    }
+        
+    var channel = pusher.subscribe('DungeonMaster');
+    channel.bind('Game', function(data) {
+        
+        console.log("Message Recieved!");
+        console.log(data.message);
+        //Parse message data
+        var jsonData = JSON.parse(data.message);
+        //Debug message data
+        console.log(jsonData);
+        
+        //Extract Players and Enemies from message data
+        var players = jsonData.entities.characters;
+        var enemies = jsonData.entities.monsters;
+        
+        //If map not initialised, load textures and call setup to create sprites for first time   
+        
+        if(!initialisedMap){
+            initialisedMap = true;
+        PIXI.loader.add("res/Ground.png")
+                .add("res/Player.png")
+                .add("res/Wall.png")
+                .add("res/Monster.png").load(setup);
+        } else {
+            
+            for(var i = entitiesCont.children.length-1; i >=0; i--){
+                entitiesCont.removeChild(entitiesCont.children[i]);
+            }
+            console.log("Players: " + players.length);
+            
+            Object.keys(players).forEach(function(key,index) {
+                console.log("Player x: " + players[key].location.x + " y: " + players[key].location.y);
+                var sprite = {sprite: new               PIXI.Sprite(PIXI.loader.resources["res/Player.png"].texture), 
+                          x: players[key].location.x, y: players[key].location.y};
+                playerSprites.push(sprite);
+                sprite.sprite.x = sprite.x * spriteDimension;
+                sprite.sprite.y = sprite.y * spriteDimension;
+                 sprite.sprite.width = spriteDimension;
+                        sprite.sprite.height = spriteDimension;
+                entitiesCont.addChild(sprite.sprite);
+                // key: the name of the object key
+                // index: the ordinal position of the key within the object 
+            });
+        
+           // console.log("Enemies in list: " + enemies.length);
+            for(var e = 0; e < enemies.length; e++){
+                var sprite = {sprite: new PIXI.Sprite(PIXI.loader.resources["res/Monster.png"].texture), 
+                      x: enemies[e].location.x, y: enemies[e].location.y}
+                enemySprites.push(sprite);
+                sprite.sprite.x = sprite.x * spriteDimension;
+                sprite.sprite.y = sprite.y * spriteDimension;
+                 sprite.sprite.width = spriteDimension;
+                        sprite.sprite.height = spriteDimension;
+                entitiesCont.addChild(sprite.sprite);
+            }
+            stage.addChild(entitiesCont);
+        }
+        
+        function setup() {
+            map = jsonData.map;
+            for(var i = 0; i < map.length; i++) {
+                var mapRow = map[i];
+                for(var j = 0; j < mapRow.length; j++){
+                    if(mapRow[j] == 1){
+                        var sprite = {sprite: new PIXI.Sprite(PIXI.loader.resources["res/Wall.png"].texture), 
+                              x: j, y: i};
+                        wallSprites.push(sprite);
+                        sprite.sprite.x = j * spriteDimension;
+                        sprite.sprite.y = i * spriteDimension;
+                        sprite.sprite.width = spriteDimension;
+                        sprite.sprite.height = spriteDimension;
+                        gameScene.addChild(sprite.sprite);
+                    } else {
+                        var sprite = {sprite: new PIXI.Sprite(PIXI.loader.resources["res/Ground.png"].texture), 
+                              x: j, y: i};
+                        groundSprites.push(sprite);
+                        sprite.sprite.x = j * spriteDimension;
+                        sprite.sprite.y = i * spriteDimension;
+                        sprite.sprite.width = spriteDimension;
+                        sprite.sprite.height = spriteDimension;
+                        gameScene.addChild(sprite.sprite);
+                    }
+                }
+            }
+            
+            for(var e = 0; e < players.length; e++){
+                var sprite = {sprite: new PIXI.Sprite(PIXI.loader.resources["res/Player.png"].texture), 
+                          x: players[e].location.x, y: players[e].location.y};
+                playerSprites.push(sprite);
+                sprite.sprite.x = sprite.x * spriteDimension;
+                sprite.sprite.y = sprite.y * spriteDimension;
+                sprite.sprite.width = spriteDimension;
+                sprite.sprite.height = spriteDimension;
+                entitiesCont.addChild(sprite.sprite);
+            }
+            for(var e = 0; e < enemies.length; e++){
+                var sprite = {sprite: new PIXI.Sprite(PIXI.loader.resources["res/Monster.png"].texture), 
+                      x: enemies[e].location.x, y: enemies[e].location.y}
+                enemySprites.push(sprite);
+                sprite.sprite.x = sprite.x * spriteDimension;
+                sprite.sprite.y = sprite.y * spriteDimension;
+                sprite.sprite.width = spriteDimension;
+                sprite.sprite.height = spriteDimension;
+                entitiesCont.addChild(sprite.sprite);
+            }
+            stage.addChild(gameScene);
+            stage.addChild(entitiesCont);
+        }
+        
+        
+    });
+    
+    function frame() {
+        //console.log("Hello");
+        //console.log(renderer);
+        if (typeof renderer != 'undefined')
+        renderer.render(stage);
+    }
+
+    setInterval(frame, 1000);
+    
+    
+  </script>
+
+    
+    <style>
+        h1   {font-family: monospace;}
+</style>
+</head>
+<body onload="onload()">
+    <div id="canvas" style="width:640px; margin:0 auto;">
+        <script>
+            
+
+    //Create a container object called the `stage`
+        </script>
+    </div>
+    <h1 id="demo">No Map</h1>
+</body>
