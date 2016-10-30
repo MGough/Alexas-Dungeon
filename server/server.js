@@ -215,7 +215,7 @@ function moveMonsters(){
     if(viableSquare({x:(curr_x),y:(curr_y - 1)})) posibillities.push({x:(curr_x),y:(curr_y - 1)});
     for(var j = 0; j < posibillities.length; j++){
       Object.keys(map.entities.characters).forEach(function(key,index){
-        if(map.entities.characters[key].location.x == posibillity[j].x && map.entities.characters[key].location.y == posibillities[j].y){
+        if(map.entities.characters[key].location.x == posibillities[j].x && map.entities.characters[key].location.y == posibillities[j].y){
           map.entities.characters[key].health--;
           return;
         }
@@ -223,7 +223,7 @@ function moveMonsters(){
     }
     console.log("Posibillities");
     console.log(posibillities);
-    var rand = getRandomInt(0,posibillities + 1);
+    var rand = getRandomInt(0,posibillities.length + 1);
     if(rand == posibillities.length) return;
     currentMonster.location = posibillities[rand];
     console.log("New Position");
