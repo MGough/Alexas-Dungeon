@@ -21,19 +21,16 @@ var languageString = {
             "REPEAT_QUESTION_MESSAGE": "To repeat the last update, say, repeat. ",
             "ASK_MESSAGE_START": "Would you like to start playing?",
             "HELP_REPROMPT": "To give an answer to a question, respond with the action you wish to take. ",
-            "STOP_MESSAGE": "Would you like to keep playing?",
             "CANCEL_MESSAGE": "Ok, let\'s play again soon.",
             "NO_MESSAGE": "Ok, we\'ll play another time. Goodbye!",
-            "GAME_UNHANDLED": "Try saying making a move.",
+            "GAME_UNHANDLED": "Try making a move.",
             "HELP_UNHANDLED": "Say yes to continue, or no to end the game.",
             "START_UNHANDLED": "Say start to start a new game.",
             "NEW_GAME_MESSAGE": "Welcome to %s. ",
-            "WELCOME_MESSAGE": "Enter room",
-            "ANSWER_WRONG_MESSAGE": "wrong. ",
-            "ANSWER_IS_MESSAGE": "That answer is ",
+            "WELCOME_MESSAGE": "You begin in a dark, damp room. Packed with computer scientists. This is Brumhack.",
             "MADE_A_MOVE": "You made a move",
-            "WALKED_WALL": "You walked. Into a wall.",
-            "WALKED_ENEMY": "You walked. Into an enemy",
+            "WALKED_WALL": "You walked into a wall.",
+            "WALKED_ENEMY": "You walked into an enemy, that hurt",
             "ATTACKED_WALL": "You attacked an inanimate object",
             "ATTACKED_ENEMY": "You attacked the enemy dealing great damage",
             "MOVED_DIRECTION": "You moved %s",
@@ -130,11 +127,6 @@ var triviaStateHandlers = Alexa.CreateStateHandler(GAME_STATES.GAME, {
         this.handler.state = GAME_STATES.HELP;
         this.emitWithState("helpTheUser", false);
     },
-    "AMAZON.StopIntent": function () {
-        this.handler.state = GAME_STATES.HELP;
-        var speechOutput = this.t("STOP_MESSAGE");
-        this.emit(":ask", speechOutput, speechOutput);
-    },
     "AMAZON.CancelIntent": function () {
         this.emit(":tell", this.t("CANCEL_MESSAGE"));
     },
@@ -179,10 +171,6 @@ var helpStateHandlers = Alexa.CreateStateHandler(GAME_STATES.HELP, {
         var speechOutput = this.t("NO_MESSAGE");
         this.emit(":tell", speechOutput);
     },
-    "AMAZON.StopIntent": function () {
-        var speechOutput = this.t("STOP_MESSAGE");
-        this.emit(":ask", speechOutput, speechOutput);
-    },
     "AMAZON.CancelIntent": function () {
         this.handler.state = GAME_STATES.GAME;
         this.emitWithState("AMAZON.RepeatIntent");
@@ -201,7 +189,7 @@ function handleUserMove() {
     var answerSlotValid = isAnswerSlotValid(this.event.request.intent);
     if(answerSlotValid) {
         var userDirection = this.event.request.intent.slots.Answer.value;
-        console.log("User said: " + userDirection);
+        console.log("User said move " + userDirection);
         var res = syncRequest('POST',  gameEnvUrl + '/input_commands', {
             json: { sessionId: sessionID, action: 'move', direction: userDirection }
         });
@@ -234,7 +222,7 @@ function handleUserAttack() {
     if(answerSlotValid) {
         var userDirection = this.event.request.intent.slots.Answer.value;
         
-        console.log("User said: " + userDirection);
+        console.log("User said attack " + userDirection);
         var res = syncRequest('POST',  gameEnvUrl + '/input_commands', {
             json: { sessionId: sessionID, action: 'attack', direction: userDirection }
         });
