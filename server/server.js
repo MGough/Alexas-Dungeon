@@ -220,6 +220,8 @@ function moveMonsters(){
     var rand = getRandomInt(0,posibillities + 1);
     if(rand == posibillities.length) return;
     currentMonster.location = posibillities[rand];
+    console.log("New Position");
+    console.log(posibillities[rand]);
     pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
   }
 }
@@ -241,3 +243,6 @@ function getRandomInt(min, max) {
 
 }
 setInterval(moveMonsters, 1000);
+setInterval(function(){
+  console.log("Tick");
+}, 1000);
