@@ -1,0 +1,155 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Node.js server",
+
+  "Parameters" : {
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access",
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Type" : "String", 
+      "Default" : "m1.small", 
+      "AllowedValues" : [ "m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","c1.medium","c1.xlarge","cc1.4xlarge"],
+      "Description" : "EC2 instance type (e.g. m1.small)"
+    },
+
+    "ElasticIp" : {
+      "Description" : "The elastic ip to use",
+      "Type" : "String"
+    }
+  },
+
+  "Mappings" : {
+    "InstanceTypeArch" : {
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"   : { "Arch" : "64" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "64" },
+      "c1.xlarge"   : { "Arch" : "64" },
+      "cc1.4xlarge" : { "Arch" : "64HVM" }
+    },
+
+    "RegionImageZone" : {
+      "us-east-1"      : { "64" : "ami-7b386c11", "64HVM" : "ami-e965ba80" },
+      "us-west-2"      : { "64" : "ami-30c64a00", "64HVM" : "NOT_YET_SUPPORTED" },
+      "us-west-1"      : { "64" : "ami-d98cd49c", "64HVM" : "NOT_YET_SUPPORTED" },
+      "eu-west-1"      : { "64" : "ami-ff231b8b", "64HVM" : "NOT_YET_SUPPORTED" },
+      "ap-southeast-1" : { "64" : "ami-b23374e0", "64HVM" : "NOT_YET_SUPPORTED" },
+      "ap-northeast-1" : { "64" : "ami-047bca05", "64HVM" : "NOT_YET_SUPPORTED" },
+      "sa-east-1"      : { "64" : "ami-ae855bb3", "64HVM" : "NOT_YET_SUPPORTED" }
+    }
+  },
+
+  "Resources" : {
+    "MyVpc": {
+      "Type" : "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock":"10.0.0.0/16"
+      }
+    },
+    "PublicSubnet": {
+      "Type":"AWS::EC2::Subnet",
+      "Properties":{
+        "VpcId" : {"Ref":"MyVpc"},
+        "CidrBlock" : "10.0.0.0/24",
+        "AvailabilityZone": "us-east-1c"
+      }
+    },
+    "InternetGateway": {
+      "Type":"AWS::EC2::InternetGateway",
+      "Properties":{
+        "Tags" : []
+      }
+    },
+    "InternetGatewayAttachment" :{
+      "Type":"AWS::EC2::VPCGatewayAttachment",
+      "Properties":{
+        "VpcId": {"Ref":"MyVpc"},
+        "InternetGatewayId": {"Ref":"InternetGateway"}
+      }
+    },
+    "PublicRouteTable":{
+      "Type":"AWS::EC2::RouteTable",
+      "DependsOn":["MyVpc"],
+      "Properties":{
+        "VpcId":{"Ref":"MyVpc"}
+      }
+    },
+    "InternetRoute":{
+      "Type" : "AWS::EC2::Route",
+      "DependsOn":["InternetGateway"],
+      "Properties":{
+        "RouteTableId": {"Ref":"PublicRouteTable"},
+        "GatewayId": {"Ref":"InternetGateway"},
+        "DestinationCidrBlock": "0.0.0.0/0"
+      }
+    },
+    "RouteTableAssoc":{
+      "Type":"AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn": ["PublicRouteTable"],
+      "Properties":{
+        "SubnetId": {"Ref":"PublicSubnet"},
+        "RouteTableId":"PublicRouteTable"
+      }
+    },
+    "ServerInstance":{
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": { "Fn::FindInMap" : [ "RegionImageZone", { "Ref" : "AWS::Region"  }, "64"  ] },
+        "KeyName": {"Ref":"KeyName"},
+        "SecurityGroupIds": [{"Ref": "ServerSG"}],
+        "InstanceType":{"Ref":"InstanceType"},
+        "SubnetId":{"Ref":"PublicSubnet"}
+      }
+    },
+    "ServerSG":{
+      "Type":"AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Allow http to client host",
+        "VpcId" : {"Ref" : "MyVpc"},
+        "SecurityGroupIngress" : [{
+          "IpProtocol" : "tcp",
+          "FromPort" : "80",
+          "ToPort" : "80",
+          "CidrIp" : "0.0.0.0/0"
+        },{
+          "IpProtocol" : "tcp",
+          "FromPort" : "22",
+          "ToPort" : "22",
+          "CidrIp" : "0.0.0.0/0"
+        }],
+        "SecurityGroupEgress" : [{
+          "IpProtocol" : "tcp",
+          "FromPort" : "80",
+          "ToPort" : "80",
+          "CidrIp" : "0.0.0.0/0"
+        },{
+          "IpProtocol" : "tcp",
+          "FromPort" : "22",
+          "ToPort" : "22",
+          "CidrIp" : "0.0.0.0/0"
+        }]
+      }
+    },
+    "ElasticIpAttachment":{
+      "Type":"AWS::EC2::EIPAssociation",
+      "Properties":{
+        "InstanceId":{"Ref":"ServerInstance"},
+        "EIP":{"Ref":"ElasticIp"}
+      }
+    }
+  },
+  "Outputs" : {
+    "InstanceName" : {
+      "Value" : { "Fn::GetAtt" : [ "ServerInstance", "PublicIp" ] },
+      "Description" : "public DNS name of the new NodejsInstance"
+    }
+  }
+}
