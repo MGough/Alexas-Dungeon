@@ -12,6 +12,7 @@ var pusher = Pusher({
   cluster:'eu',
   encrypted:true
 });
+
 console.log(pusher);
 
 var map = {
@@ -99,6 +100,6 @@ function addCharacter(sessionId){
   map.entities.players.sessionId.health = gameData.startingHealth;
   map.entities.players.sessionId.location = gameData.startingLocations.pop();
   map.entities.players.sessionId.damage = gameData.startingDamage;
-  //pusher.trigger('DungeonMaster', 'Game',map);
+  pusher.trigger('DungeonMaster', 'Game',map);
   return map.entities.players.sessionId;
 }
