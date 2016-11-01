@@ -1,5 +1,5 @@
 # Alexas-Dungeon
-A dungeon crawler controlled entirely by Amazon Alexa, built in 24 hours at Brumhack 5.0.
+A dungeon crawler controlled entirely by Amazon Alexa, built in 24 hours at Brumhack 5.0. It's certainly not perfect, but the basic mechanics are there. It does sometimes say `undefined` if you leave it alone for too long, which is definitely a feature.
 
 #Setting up
 In order to run this you'll need and AWS Lambda and an Alexa skill set up using the contents of the `alexaSkill` directory.
