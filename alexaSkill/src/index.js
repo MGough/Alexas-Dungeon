@@ -27,14 +27,14 @@ var languageString = {
             "HELP_UNHANDLED": "Say yes to continue, or no to end the game.",
             "START_UNHANDLED": "Say start to start a new game.",
             "NEW_GAME_MESSAGE": "Welcome to %s. ",
-            "WELCOME_MESSAGE": "You begin in a dark, damp room. Packed with computer scientists. This is Brumhack.",
+            "WELCOME_MESSAGE": "You begin in a dark, damp room full of unwashed trolls. Also known as, Brumhack. Make your move.",
             "MADE_A_MOVE": "You made a move",
-            "WALKED_WALL": "You walked into a wall.",
+            "WALKED_WALL": ["You walked into a wall.", "You walked into a wall, you should really get some sleep", "You walked into a wall, have you been drinking?", "You hit your head on a wall, I thought you were smart", "In your attempt to become one with the wall, you hit your head.", "You walked into a wall, you really do have the intelligence of a brick"],
             "WALKED_ENEMY": "You walked into an enemy, that hurt",
-            "ATTACKED_WALL": "You attacked an inanimate object",
-            "ATTACKED_ENEMY": "You attacked the enemy dealing great damage",
+            "ATTACKED_WALL": ["You attacked an inanimate object", "You attacked the wall, what did the wall ever do to you?", "You attacked the wall, is that your feeble attempt to leave a mark on the world?"],
+            "ATTACKED_ENEMY": ["You attacked the enemy dealing great damage", "You smite your foe!"],
             "MOVED_DIRECTION": "You moved %s",
-            "ATTACKED_DIRECTION": "You bravely attacked the air %s"
+            "ATTACKED_DIRECTION": ["You bravely attacked the air %s", "You swung at the air, it didn't flinch"]
         }
     }
 };
@@ -77,7 +77,7 @@ var newSessionHandlers = {
 var endGameStateHandlers = Alexa.CreateStateHandler(GAME_STATES.END, {
     "EndGame": function () {
         this.handler.state = GAME_STATES.END;
-        this.emit(":tell", "You died");
+        this.emit(":tell", "You died, what a surprise.");
     }
 });
 
@@ -103,6 +103,10 @@ var startStateHandlers = Alexa.CreateStateHandler(GAME_STATES.START, {
         // Set the current state to trivia mode. The skill will now use handlers defined in triviaStateHandlers
         this.handler.state = GAME_STATES.GAME;
         this.emit(":askWithCard", speechOutput, speechOutput, this.t("GAME_NAME"), speechOutput);
+    },
+    "Unhandled": function () {
+        this.handler.state = GAME_STATES.START;
+        this.emitWithState("StartGame", false);
     }
 });
 
@@ -131,7 +135,7 @@ var triviaStateHandlers = Alexa.CreateStateHandler(GAME_STATES.GAME, {
         this.emit(":tell", this.t("CANCEL_MESSAGE"));
     },
     "Unhandled": function () {
-        var speechOutput = this.t("TRIVIA_UNHANDLED");
+        var speechOutput = "Please try again";
         this.emit(":ask", speechOutput, speechOutput);
     },
     "SessionEndedRequest": function () {
@@ -202,7 +206,9 @@ function handleUserMove() {
                 this.handler.state = GAME_STATES.END;
                 this.emitWithState("EndGame", false);
             } else if(body.status == "wall") {
-                this.emit(":askWithCard", this.t("WALKED_WALL"));
+                var statements = this.t("WALKED_WALL");
+                var random =  Math.floor(Math.random() * (statements.length)) + 0;
+                this.emit(":askWithCard", statements[random]);
             } else if (body.status == "enemy") {
                 this.emit(":askWithCard", this.t("WALKED_ENEMY"));
             } else {
@@ -235,11 +241,14 @@ function handleUserAttack() {
                 this.handler.state = GAME_STATES.END;
                 this.emitWithState("EndGame", false);
             } else if(body.status == "wall") {
-                this.emit(":askWithCard", this.t("ATTACKED_WALL"));
+                var random = Math.floor(Math.random() * (2 - 0 + 1)) + 0;
+                this.emit(":askWithCard", this.t("ATTACKED_WALL")[random]);
             } else if (body.status == "enemy") {
-                this.emit(":askWithCard", this.t("ATTACKED_ENEMY"));
+                var random = Math.floor(Math.random() * (1 - 0 + 1)) + 0;
+                this.emit(":askWithCard", this.t("ATTACKED_ENEMY")[random]);
             } else {
-                this.emit(":askWithCard", this.t("ATTACKED_DIRECTION", userDirection));
+                var random = Math.floor(Math.random() * (1 - 0 + 1)) + 0;
+                this.emit(":askWithCard", this.t("ATTACKED_DIRECTION", userDirection)[random]);
             }
         }
     } else {
