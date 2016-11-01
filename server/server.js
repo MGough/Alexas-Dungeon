@@ -11,9 +11,9 @@ var Pusher = require('pusher');
 console.log("Pusher " + Pusher);
 
 var pusher = new Pusher({
-  appId: '264680',
-  key: '433c548f734c4cf70a7b',
-  secret: '***REMOVED***',
+  appId: process.env.PUSHER_APP_ID_ALEXAS_DUNGEON,
+  key: process.env.PUSHER_APP_KEY_ALEXAS_DUNGEON,
+  secret: process.env.PUSHER_APP_SECRET_ALEXAS_DUNGEON,
   cluster: 'eu',
   encrypted: true,
 });

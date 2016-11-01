@@ -1,6 +1,6 @@
 "use strict";
 
-var gameEnvUrl = "http://52.54.248.154";
+var gameEnvUrl = "https://alexasdungeon.herokuapp.com";
 
 var GAME_STATES = {
     GAME: "_GAMEMODE", // Asking trivia questions.
@@ -42,7 +42,7 @@ var languageString = {
 var request = require('request');
 var syncRequest = require('sync-request');
 var Alexa = require("alexa-sdk");
-var APP_ID = '***REMOVED***';  // TODO replace with your app ID (OPTIONAL).
+var APP_ID = 'amzn1.ask.skill.3c91b3a8-c7b6-43b3-b21d-7a2641a1a980';  // TODO replace with your app ID (OPTIONAL).
 
 
 exports.handler = function(event, context, callback) {
