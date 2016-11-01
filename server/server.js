@@ -1,4 +1,4 @@
-var port = 8080;
+var port = process.env.PORT || 80
 var express = require('express');
 var app = express();
 var path = require('path');
@@ -90,8 +90,9 @@ app.post('/register_character', function(req,res){
   }
   res.send(character);  
 })
-app.listen(8880,function(){
-  console.log("Listening on port: 8880");
+
+app.listen(port || 8880,function(){
+  console.log("Listening on port: " + port);
 });
 
 function moveCharacter(sessionId, direction){
