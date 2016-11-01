@@ -47,6 +47,8 @@ var map = {
   }
 };
 
+var storedMap = map;
+
 var gameData = {
   startingHealth : 4,
   startingLocations : [{x:1,y:1}],
@@ -54,6 +56,8 @@ var gameData = {
   width: map.map[0].length,
   height: map.map.length,
 }
+
+var storedGameData = gameData;
 
 console.log("Game Data: ", gameData);
 
@@ -80,6 +84,10 @@ app.post('/input_commands', function(req,res){
 });
 
 app.post('/register_character', function(req,res){
+  //these will break multiplayer sadly
+  map = storedMap;
+  gameData = storedGameData;
+
   console.log("Registering Character");
   console.log(req.body);
   var character = {}
