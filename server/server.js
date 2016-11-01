@@ -3,6 +3,8 @@ var express = require('express');
 var app = express();
 var path = require('path');
 var bodyParser = require('body-parser')
+
+app.use(express.static('public'));
 app.use(bodyParser.json());
 var Pusher = require('pusher');
 
@@ -15,6 +17,8 @@ var pusher = new Pusher({
   cluster: 'eu',
   encrypted: true,
 });
+
+
 
 console.log( "pusher " + pusher);
 
@@ -53,10 +57,6 @@ var gameData = {
 
 console.log("Game Data: ", gameData);
 
-app.get('/',function(req,res){
-  res.sendFile(path.join(__dirname+'/client/index.html'));
-});
-
 app.get('/current_state', function(req,res){
 
 });
@@ -90,8 +90,8 @@ app.post('/register_character', function(req,res){
   }
   res.send(character);  
 })
-app.listen(80,function(){
-  console.log("Listening on port: 80");
+app.listen(8880,function(){
+  console.log("Listening on port: 8880");
 });
 
 function moveCharacter(sessionId, direction){
