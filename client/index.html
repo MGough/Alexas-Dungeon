@@ -13,7 +13,8 @@
     var stage = new PIXI.Container();
     var gameScene = new PIXI.Container();
     var entitiesCont = new PIXI.Container();
-   
+    var vinCont = new PIXI.Container();
+    var vinSprite;
         
     var initialisedMap = false;
     var enemySprites = [];
@@ -21,6 +22,8 @@
     var wallSprites = [];
     var groundSprites = [];
         
+    var x = 320;
+    var y = 320;
     var pusher = new Pusher('433c548f734c4cf70a7b', {
       cluster: 'eu',
       encrypted: true
@@ -35,7 +38,7 @@
     channel.bind('Game', function(data) {
         
         //console.log("Message Recieved!");
-        //console.log(data.message);
+        console.log(data.message);
         //Parse message data
         var jsonData = JSON.parse(data.message);
         //Debug message data
@@ -52,6 +55,11 @@
         PIXI.loader.add("res/Ground.png")
                 .add("res/Player.png")
                 .add("res/Wall.png")
+                .add("res/PlayerRed.png")
+                .add("res/Player1.png")
+                .add("res/Player2.png")
+                .add("res/Player3.png")
+                .add("res/Vin.png")
                 .add("res/Monster.png").load(setup);
         } else {
             
@@ -62,8 +70,22 @@
             
             Object.keys(players).forEach(function(key,index) {
                 //console.log("Player x: " + players[key].location.x + " y: " + players[key].location.y);
-                var sprite = {sprite: new               PIXI.Sprite(PIXI.loader.resources["res/Player.png"].texture), 
+                var img = "Player";
+                if(players[key].health <= 0){
+                    img = "PlayerRed";
+                } else if(players[key].health == 1){
+                    img = "Player1";
+                } else  if(players[key].health == 2){
+                    img = "Player2";
+                } else  if(players[key].health == 3){
+                    img = "Player3";
+                }
+                
+                     var sprite = {sprite: new               PIXI.Sprite(PIXI.loader.resources["res/" + img + ".png"].texture), 
                           x: players[key].location.x, y: players[key].location.y};
+                x = -640 + sprite.x * spriteDimension;
+                y = -640 + sprite.y * spriteDimension;
+               
                 playerSprites.push(sprite);
                 sprite.sprite.x = sprite.x * spriteDimension;
                 sprite.sprite.y = sprite.y * spriteDimension;
@@ -85,7 +107,11 @@
                         sprite.sprite.height = spriteDimension;
                 entitiesCont.addChild(sprite.sprite);
             }
+            vinSprite.x = x;
+            vinSprite.y = y;
+            
             stage.addChild(entitiesCont);
+            stage.addChild(vinCont);
         }
         
         function setup() {
@@ -120,6 +146,8 @@
                 var sprite = {sprite: new               PIXI.Sprite(PIXI.loader.resources["res/Player.png"].texture), 
                           x: players[key].location.x, y: players[key].location.y};
                 playerSprites.push(sprite);
+                x = -640 + sprite.x * spriteDimension;
+                y = -640 + sprite.y * spriteDimension;
                 sprite.sprite.x = sprite.x * spriteDimension;
                 sprite.sprite.y = sprite.y * spriteDimension;
                  sprite.sprite.width = spriteDimension;
@@ -138,8 +166,15 @@
                 sprite.sprite.height = spriteDimension;
                 entitiesCont.addChild(sprite.sprite);
             }
+            vinSprite = new PIXI.Sprite(PIXI.loader.resources["res/Vin.png"].texture);
+            vinCont.addChild(vinSprite);
+            vinSprite.x = x;
+            vinSprite.y = y;
+            vinSprite.alpha = 0.9;
+            
             stage.addChild(gameScene);
             stage.addChild(entitiesCont);
+            stage.addChild(vinCont);
         }
         
         
@@ -150,6 +185,7 @@
         //console.log(renderer);
         if (typeof renderer != 'undefined')
         renderer.render(stage);
+        //renderer.render(vinCont);
     }
 
     setInterval(frame, 1000);
@@ -170,5 +206,4 @@
     //Create a container object called the `stage`
         </script>
     </div>
-    <h1 id="demo">No Map</h1>
 </body>

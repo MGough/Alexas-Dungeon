@@ -20,14 +20,14 @@ console.log( "pusher " + pusher);
 
 var map = {
   map: [[1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,1,0,0,0,0,0,1],
+        [1,0,0,1,0,0,0,0,0,1],
+        [1,0,0,1,0,0,1,0,0,1],
+        [1,0,0,1,0,0,1,0,0,1],
+        [1,0,0,0,0,0,1,0,0,1],
+        [1,0,0,0,0,0,1,0,0,1],
+        [1,0,0,1,0,0,1,0,0,1],
+        [1,0,0,1,0,0,0,0,0,1],
         [1,1,1,1,1,1,1,1,1,1]],
   entities: {
     monsters: [
@@ -45,16 +45,16 @@ var map = {
 
 var gameData = {
   startingHealth : 4,
-  startingLocations : [{x:4,y:4}],
+  startingLocations : [{x:1,y:1}],
   startingDamage : 9001,
-  width: map.map.length,
-  height: map.map[0].length
+  width: map.map[0].length,
+  height: map.map.length,
 }
 
 console.log("Game Data: ", gameData);
 
 app.get('/',function(req,res){
-  res.sendFile(path.join(__dirname+'/pages/index.html'));
+  res.sendFile(path.join(__dirname+'/client/index.html'));
 });
 
 app.get('/current_state', function(req,res){
@@ -71,13 +71,11 @@ app.post('/input_commands', function(req,res){
     console.log("value from request is undefined");
     res.sendStatus(400);
   }
-  var character;
+  var character = map.entities.characters[sessionId];
   if(action == 'move') character = moveCharacter(sessionId,direction);
-  if(action == 'attack') character = makeAttack(sessionId,direction)
+  if(action == 'attack') character = makeAttack(sessionId,direction);
   if(character != undefined){
     res.send(character); 
-  }else{
-    res.sendStatus(500);
   }
 });
 
@@ -102,6 +100,8 @@ function moveCharacter(sessionId, direction){
   console.log("Moved Character: ");
   console.log(character);
   character.lastAction = 'move';
+  var next_x = character.location.x;
+  var next_y = character.location.y;
   if(direction == 'up') direction_vector = {x:0, y:-1};
   if(direction == 'down') direction_vector = {x:0, y:1};
   if(direction == 'left') direction_vector = {x:-1,y:0};
@@ -111,8 +111,8 @@ function moveCharacter(sessionId, direction){
     console.log(character);
     var char_x = character.location.x;
     var char_y = character.location.y;
-    var next_x = char_x + direction_vector.x;
-    var next_y = char_y + direction_vector.y;
+    next_x = char_x + direction_vector.x;
+    next_y = char_y + direction_vector.y;
     console.log("New x: " + next_x + "New y: " + next_y);
     if(next_x < 0 || next_x > gameData.width){
       character.status = 'wall';
@@ -124,7 +124,7 @@ function moveCharacter(sessionId, direction){
       console.log("Character " + sessionId + "hit a wall");
       return character;
     }
-    if(map.map[next_x][next_y] == 1){
+    if(map.map[next_y][next_x] == 1){
       character.status = 'wall';
       console.log("Character " + sessionId + "hit a wall");
       return character;
@@ -140,8 +140,8 @@ function moveCharacter(sessionId, direction){
         return character; 
       }
     }
-    
   }
+
   character.location.x = next_x;
   character.location.y = next_y;
   character.status = 'success';
@@ -164,7 +164,7 @@ function makeAttack(sessionId, direction){
     var char_y = character.location.y;
     var next_x = char_x + direction_vector.x;
     var next_y = char_y + direction_vector.y;
-    if(map.map[next_x][next_y] == 1){
+    if(map.map[next_y][next_x] == 1){
       character.status = 'wall';
       return character;
     }
@@ -191,10 +191,67 @@ function makeAttack(sessionId, direction){
 function addCharacter(sessionId){
   map.entities.characters[sessionId] = {};
   map.entities.characters[sessionId].health = gameData.startingHealth;
-  map.entities.characters[sessionId].location = gameData.startingLocations.pop();
+  map.entities.characters[sessionId].location = gameData.startingLocations[0];
   map.entities.characters[sessionId].damage = gameData.startingDamage;
   pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
   console.log("Just before added character");
   console.log(map.entities.characters[sessionId]);
   return map.entities.characters[sessionId];
 }
+
+function moveMonsters(){
+  console.log("MONSTERS ON THE MOOOOOVE");
+  console.log(map.entities.monsters);
+  console.log(map.entities.monsters.length);
+  for(var i=0; i < map.entities.monsters.length; i++){
+    var posibillities = [];
+    var currentMonster = map.entities.monsters[i];
+    console.log(currentMonster);
+    curr_x = currentMonster.location.x;
+    curr_y = currentMonster.location.y;
+    if(viableSquare({x:(curr_x + 1),y:(curr_y)})) posibillities.push({x:(curr_x + 1),y:(curr_y)});
+    if(viableSquare({x:(curr_x - 1),y:(curr_y)})) posibillities.push({x:(curr_x - 1),y:(curr_y)});
+    if(viableSquare({x:(curr_x),y:(curr_y + 1)})) posibillities.push({x:(curr_x),y:(curr_y + 1)});
+    if(viableSquare({x:(curr_x),y:(curr_y - 1)})) posibillities.push({x:(curr_x),y:(curr_y - 1)});
+    for(var j = 0; j < posibillities.length; j++){
+      Object.keys(map.entities.characters).forEach(function(key,index){
+        if(map.entities.characters[key].location.x == posibillities[j].x && map.entities.characters[key].location.y == posibillities[j].y){
+          map.entities.characters[key].health--;
+          return;
+        }
+      });
+    }
+    console.log("Posibillities");
+    console.log(posibillities);
+    var rand = getRandomInt(0,posibillities.length + 1);
+    if(rand == posibillities.length) return;
+    currentMonster.location = posibillities[rand];
+    console.log("New Position");
+    console.log(posibillities[rand]);
+    pusher.trigger('DungeonMaster', 'Game',{'message':JSON.stringify(map)});
+  }
+}
+
+function viableSquare(coord){
+  var inbounds = coord.x > 0 && coord.y > 0 && coord.x < gameData.width && coord.y < gameData.height;
+  var notWall = map.map[coord.y][coord.x] == 0;
+  var noMonster = true;
+  for(var i = 0; i < map.entities.monsters.length;i++){
+    console.log(map.entities.monsters);
+    if(map.entities.monsters[i].location.x == coord.x && map.entities.monsters[i].location.y == coord.y ) noMonster = false;
+  }
+  console.log("in bounds: " + inbounds);
+  console.log("notWall: " + notWall);
+  console.log("noMonster: " + noMonster);
+  return inbounds && notWall && noMonster;
+}
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+setInterval(function(){
+ moveMonsters();
+ console.log("Moving Monsters");
+}, 8000);
